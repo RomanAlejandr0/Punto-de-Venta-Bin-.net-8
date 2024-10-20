@@ -168,27 +168,29 @@
 
     private async Task GuardarCambiosNegocio()
     {
-        procesando = true;
 
-        return;
+        await mostrarMensajes.MostrarMensajeExitoso("Trabajando en este metodo :)");
+        // procesando = true;
 
-        var respuesta = await manager.Post<Negocio, long>("Negocios/GuardarNegocio", negocioEdicion);
+        // return;
 
-        if (respuesta.Estado == EstadosDeRespuesta.Correcto)
-        {
-            await mostrarMensajes.MostrarMensajeExitoso(respuesta.Mensaje);
-            navigate.NavigateTo("/login");
-        }
-        else if (respuesta.Estado == EstadosDeRespuesta.NoProceso)
-        {
-            await mostrarMensajes.MostrarMensajeError("Peticion no procesada");
-        }
-        else if (respuesta.Estado == EstadosDeRespuesta.Error)
-        {
-            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
-        }
+        // var respuesta = await manager.Post<Negocio, long>("Negocios/GuardarNegocio", negocioEdicion);
 
-        procesando = false;
+        // if (respuesta.Estado == EstadosDeRespuesta.Correcto)
+        // {
+        //     await mostrarMensajes.MostrarMensajeExitoso(respuesta.Mensaje);
+        //     navigate.NavigateTo("/login");
+        // }
+        // else if (respuesta.Estado == EstadosDeRespuesta.NoProceso)
+        // {
+        //     await mostrarMensajes.MostrarMensajeError("Peticion no procesada");
+        // }
+        // else if (respuesta.Estado == EstadosDeRespuesta.Error)
+        // {
+        //     await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        // }
+
+        // procesando = false;
     }
 
     private void EliminarNegocio(long value)
