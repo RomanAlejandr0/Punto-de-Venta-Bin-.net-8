@@ -1,0 +1,72 @@
+﻿@page "/clientes/visualizarInformacion/{ClienteId:long}"
+@inject IManager manager
+@inject NavigationManager navigationManager
+@inject IMostrarMensajes mostrarMensajes
+
+<h3>Visualizar Informacion del Cliente</h3>
+
+<p>Informacion del cliente: @cliente</p>
+
+@if (cliente == null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    @*<h3>@Cliente.Nombre</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <thbody>
+            @foreach (var venta in Cliente.Ventas)
+            {
+                <tr>
+
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="text-end" scope="row" colspan="5">Total:</td>
+                    <td>@venta.Total</td>
+                </tr>
+            }
+        </thbody>
+    </table>*@
+}
+
+@code {
+
+    [Parameter] public long ClienteId { get; set; }
+    public Cliente cliente = new Cliente();
+    public ClienteDTO clienteDTO { get;set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        //var respuesta = await manager.Get<Cliente>($"api/clientes/{ClienteId}");
+
+        //if (respuesta.Estado == EstadosDeRespuesta.Error)
+        //{
+        //    await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        //}
+        //else
+        //{
+        //    Cliente = respuesta.Datos;
+        //}
+
+
+        var respuesta2 = await manager.Get<Cliente>($"api/clientes/traerClienteConSusVentas/{ClienteId}");        
+
+        if (respuesta2.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta2.Mensaje);
+        }
+        else
+        {
+            cliente = respuesta2.Datos;
+        }
+    
+    }
+}

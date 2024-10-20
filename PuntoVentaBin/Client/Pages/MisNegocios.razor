@@ -1,0 +1,205 @@
+﻿@page "/mis-negocios"
+@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+@inject IJSRuntime js
+@inject ILoginService loginService
+@inject NavigationManager navigate
+
+<body>
+    @* Navbar *@
+    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4 shadow-sm">
+        <div class="container-fluid px-5 py-1">
+            <a class="navbar-brand" href="#">Punto de Venta Bin</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <div class="d-flex">
+                    <!-- Botón de Agregar Negocio -->
+                    <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#modalNegocio"
+                            @onclick="AgregarNuevoNegocio" aria-label="Agregar Negocio">
+                        <i class="bi bi-plus-circle me-1"></i> Agregar Negocio
+                    </button>
+                    <!-- Botón de Perfil -->
+                    <button class="btn btn-primary me-2" @onclick="IrAlPerfil" aria-label="Perfil">
+                        <i class="bi bi-person-circle me-1"></i> Perfil
+                    </button>
+                    <!-- Botón de Cerrar Sesión -->
+                    <button class="btn btn-warning" @onclick="Logout" aria-label="Cerrar Sesión">
+                        <i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container px-4 py-4">
+        <h3 class="mb-4">Mis Negocios</h3>
+        <div class="row">
+            @foreach (var negocio in negocios)
+            {
+                <div class="col-12 col-md-6 col-lg-3 mb-4">
+                    <div class="card h-100">
+                        <img src="/ImagenesIndex/ImagenesEjemplosMisNegocois/Abarrotes Delirio.jpeg" class="card-img-top" alt="Imagen de @negocio.Nombre">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@negocio.Nombre</h5>
+                            <p class="card-text">@negocio.TipoNegocio</p>
+                            <div class="mt-auto">
+                                <button class="btn btn-primary w-100 mb-2" data-bs-toggle="modal" data-bs-target="#modalNegocio"
+                                        @onclick="() => EditarNegocio(negocio.Id)">
+                                    <i class="bi bi-pencil-square me-2"></i> Editar
+                                </button>
+                                <button class="btn btn-outline-primary w-100" @onclick="() => EntrarNegocio(negocio.Id)">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i> Entrar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+
+    <!-- Modal Nuevo Negocio-->
+    <div class="modal fade" id="modalNegocio" data-bs-backdrop="static" data-bs-keyboard="false"
+         tabindex="-1" aria-labelledby="modalNegocioLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="modalNegocioLabel">@TituloModalNegocio</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="negocioEdicion" OnValidSubmit="(() => GuardarCambiosNegocio())">
+                        <DataAnnotationsValidator />
+
+                        <label class="form-label">Nombre negocio:</label>
+                        <div class="input-group input-group-lg mb-3">
+                            @*                             <span class="input-group-text">
+                            <i class="bi bi-file-person" style="font-size: 1.2rem;"></i>
+                            </span> *@
+                            <InputText type="text" class="form-control form-control-sm" @bind-Value="negocioEdicion.Nombre" />
+                        </div>
+                        <ValidationMessage For="(() => negocioEdicion.Nombre)" class="text-danger" />
+
+                        <label class="form-label">Tipo Negocio:</label>
+                        <div class="input-group input-group-lg mb-3">
+                            @* <span class="input-group-text">
+                            <i class="bi bi-file-person" style="font-size: 1.2rem;"></i>
+                            </span> *@
+                            <InputSelect class="form-select form-select-sm" @bind-Value="negocioEdicion.TipoNegocio">
+                                @foreach (var categoria in categorias)
+                                {
+                                    <option value="@categoria">@categoria</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <ValidationMessage For="(() => negocioEdicion.TipoNegocio)" class="text-danger" />
+
+                        <label class="form-label">CodigoPostal:</label>
+                        <div class="input-group input-group-lg mb-3">
+                            @* <span class="input-group-text">
+                            <i class="bi bi-file-person" style="font-size: 1.2rem;"></i>
+                            </span> *@
+                            <InputText type="text" class="form-control form-control-sm" @bind-Value="negocioEdicion.CodigoPostal" />
+                        </div>
+                        <ValidationMessage For="(() => negocioEdicion.CodigoPostal)" class="text-danger" />
+                    </EditForm>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" @onclick="(() => GuardarCambiosNegocio())" class="btn btn-primary">Guardar Negocio</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+
+@code {
+    [Parameter] public long UsuarioId { get; set; }
+    private bool procesando = false;
+
+
+    private UsuarioBin usuario = new UsuarioBin();
+    private Negocio negocioEdicion = new Negocio();
+    private string TituloModalNegocio = string.Empty;
+
+    new List<string> categorias = new List<string>() { "Tienda de Abarrotes", "Papeleria" };
+
+    private void IrAlPerfil()
+    {
+        navigate.NavigateTo("/#");
+        // navigate.NavigateTo("/perfil");
+    }
+
+
+    private List<Negocio> negocios = new List<Negocio>
+    {
+        new Negocio
+        {
+            Id = 1,
+            TipoNegocio = "Tienda de Abarrotes",
+            Nombre = "Abarrotes Delirio",
+            CodigoPostal = "28001",
+            FechaRegistro = new DateTime(2023, 1, 15)
+        }
+    };
+
+    private void EntrarNegocio(long value)
+    {
+        // Lógica para agregar un nuevo negocio
+    }
+
+
+    private void AgregarNuevoNegocio()
+    {
+        TituloModalNegocio = "Nuevo Negocio";
+        negocioEdicion = new Negocio();
+    }
+
+    private void EditarNegocio(long value)
+    {
+        TituloModalNegocio = "Nuevo Negocio";
+        negocioEdicion = negocios.First(x => x.Id == value);
+    }
+
+    private async Task GuardarCambiosNegocio()
+    {
+        procesando = true;
+
+        return;
+
+        var respuesta = await manager.Post<Negocio, long>("Negocios/GuardarNegocio", negocioEdicion);
+
+        if (respuesta.Estado == EstadosDeRespuesta.Correcto)
+        {
+            await mostrarMensajes.MostrarMensajeExitoso(respuesta.Mensaje);
+            navigate.NavigateTo("/login");
+        }
+        else if (respuesta.Estado == EstadosDeRespuesta.NoProceso)
+        {
+            await mostrarMensajes.MostrarMensajeError("Peticion no procesada");
+        }
+        else if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+
+        procesando = false;
+    }
+
+    private void EliminarNegocio(long value)
+    {
+        // Lógica para agregar un nuevo negocio
+    }
+
+    private async Task Logout()
+    {
+        await loginService.Logout();
+        var Tarea = Task.Run(() => navigate.NavigateTo("/"));
+        await Tarea;
+    }
+}

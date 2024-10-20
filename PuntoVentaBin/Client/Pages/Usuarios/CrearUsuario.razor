@@ -1,0 +1,41 @@
+﻿@page "/usuarios/crear"
+@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+@inject NavigationManager navigationManager
+@inject IJSRuntime js
+@attribute [Authorize]
+
+
+<h3>Crear Usuario</h3>
+
+<FormularioUsuarios usuario="usuario" OnValidSubmit="Crear" Procesando="procesando"/>
+
+@code {
+    private UsuarioBin usuario = new UsuarioBin();
+    private bool procesando = false;
+
+    private async Task Crear()
+    {
+        procesando = true;
+
+        bool confirmed = await js.Confirm("¿Guardar usuario?");
+
+        if (confirmed)
+        {
+
+            var respuesta = await manager.Post<UsuarioBin, long>("api/usuarios/CrearUsuario", usuario);
+
+            if (respuesta.Estado == EstadosDeRespuesta.Error)
+            {
+                await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+            }
+            else
+            {
+                navigationManager.NavigateTo("/usuarios");
+            }
+
+        }
+
+        procesando = false;
+    }
+}

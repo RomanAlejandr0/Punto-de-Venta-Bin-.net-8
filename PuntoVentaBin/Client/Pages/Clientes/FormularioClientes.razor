@@ -1,0 +1,39 @@
+﻿@inject NavigationManager navigationManager
+
+<h3>Formulario de Clientes</h3>
+
+<EditForm Model="cliente" OnValidSubmit="OnValidSubmit">
+    <div class="row mb-2">
+        <div class="col-12 col-md-6">
+            <label >Nombre del Cliente</label>
+            <InputText class="form-control" @bind-Value="cliente.Nombre" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 col-md-6">
+            <label class="col-form-label">Correo Electronico</label>
+            <InputText class="form-control" @bind-Value="cliente.Email" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 col-sm-auto">
+            <button type="submit" class="btn btn-lg btn-primary"> Guardar Cambios</button>
+        </div>
+        <div class="col-12 col-sm-auto">
+            <button class="btn btn-lg btn-warning" @onclick="Cancelar">Cancelar</button>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+	[Parameter] public Cliente cliente { get; set; }
+    [Parameter] public bool Procesando { get; set; }
+	[Parameter] public EventCallback OnValidSubmit { get; set; }
+
+	private void Cancelar()
+	{
+		navigationManager.NavigateTo("/clientes");
+	}
+}

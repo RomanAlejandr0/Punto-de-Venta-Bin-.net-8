@@ -1,0 +1,173 @@
+﻿@page "/pedidos"
+@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+@inject NavigationManager navigationManager
+@inject AuthenticationStateProvider auth
+
+@attribute [Authorize]
+
+<PageTitle>Pedidos</PageTitle>
+
+<h5 class="border-start border-2 ps-1 mb-3">Area de Pedidos</h5>
+
+<div class="col-auto">
+    <a class="btn btn-info " href="/pedidos/crear">Nuevo Pedido</a>
+</div>
+
+<ListadoGenerico Listado="Pedidos">
+    <HayRegistros>
+        <div class="p-4">
+            <h3>Lista Pedidos Activos</h3>
+
+            <div class="row g-1">
+                <input class="form-control form-control-lg" list="opciones" @bind="PalabraBusqueda" @bind:event="oninput" id="DatalistClientes" placeholder="Escribe para buscar..." />
+
+                <div class="col-auto">
+                    <datalist id="opciones">
+                        @foreach (var item in opciones)
+                        {
+                            if (item.ToUpper().Contains(PalabraBusqueda.ToUpper()) && PalabraBusqueda.Length > 1)
+                            {
+                                <option @onclick="() => PalabraBusqueda = item" value="@item" />
+                            }
+                        }
+                    </datalist>
+                </div>
+            </div>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Cliente</th>
+                        <th scope="col">Fecha pedido</th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
+                        <th scope="col">Total</th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var pedido in Pedidos)
+                    {
+                        <tr>
+                            <td scope="col">@pedido.NombreCliente</td>
+                            <td scope="col">@pedido.FechaHoraVenta</td>
+                            <td scope="col">
+                                <div class="form-check">
+                                    <label class="form-check-label" for="flexCheckDefault">
+                                        Entregado
+                                    </label>
+                                    <input class="form-check-input" type="checkbox" value="@(pedido.PedidoExtension.Entregado)" id="flexCheckDefault">
+                                </div>
+                            </td>
+                            <td scope="col">
+                                <div class="form-check">
+                                    <label class="form-check-label" for="flexCheckDefault">
+                                        Pagado
+                                    </label>
+                                    <input class="form-check-input" type="checkbox" value="@(pedido.PedidoExtension.Pagado)" id="flexCheckDefault">
+                                </div>
+                            </td>
+                            <td scope="col">@pedido.Total.ToString("$0.00")</td>
+                            <td scope="col">
+                                <a class="btn btn-success" href="/pedidos/editar/@pedido.Id">Editar</a>
+                            </td>
+                            <td scope="col">
+                                <button type="button" class="btn btn-info" data-bs-toggle="modal"
+                                    data-bs-target="#ModalDetalles" @onclick="(() => AbrirDetalle(pedido))">
+                                    Detalles
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!--Modal de detalles-->
+            @*<ModalPedidoDetalles PedidoId="pedido.Id"  />*@
+            <div class="modal fade" id="ModalDetalles" tabindex="-1" aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Detalles</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Producto</th>
+                                        <th scope="col">Cantidad</th>
+                                        <th scope="col">Precio</th>
+                                        <th scope="col">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var pedidoDetalle in pedidoDetalle.VentaDetalles)
+                                    {
+                                        <tr>
+                                            <th scope="row">1</th>
+                                            <td>@pedidoDetalle.DescripcionProducto</td>
+                                            <td>@pedidoDetalle.Cantidad</td>
+                                            <td>@pedidoDetalle.Precio</td>
+                                            <td>@pedidoDetalle.Total</td>
+                                        </tr>
+                                    }
+                                    <tr>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary"
+                                    data-bs-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="button" class="btn btn-primary">Save changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </HayRegistros>
+</ListadoGenerico>
+
+@code {
+    public string PalabraBusqueda { get; set; } = string.Empty;
+    List<string> opciones = new List<string>();
+
+    private long EmpresaId = new long();
+
+    private Venta pedidoDetalle = new Venta() { VentaDetalles = new List<VentaDetalle>() };
+    private List<Venta> Pedidos = new List<Venta>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Cargar();
+    }
+
+    protected async Task Cargar()
+    {
+        EmpresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+
+        var respuestaPedidos = await manager.Get<List<Venta>>($"api/pedidos/GetPedidosActivos/{EmpresaId}");
+
+        if (respuestaPedidos.Estado == EstadosDeRespuesta.Correcto)
+        {
+            Pedidos = respuestaPedidos.Datos;
+        }
+        else
+        {
+            await mostrarMensajes.MostrarMensajeError(respuestaPedidos.Mensaje);
+        }
+    }
+
+    private void AbrirDetalle(Venta value)
+    {
+        pedidoDetalle = value;
+    }
+}

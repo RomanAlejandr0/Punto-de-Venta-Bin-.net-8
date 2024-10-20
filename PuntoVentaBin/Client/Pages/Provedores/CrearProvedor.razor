@@ -1,0 +1,42 @@
+﻿@page "/provedores/crear"
+@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+@inject NavigationManager navigationManager
+@inject AuthenticationStateProvider auth
+@inject IJSRuntime js
+@attribute [Authorize]
+
+
+<h3>Crear Provedor</h3>
+
+<FormularioProvedores provedor="provedor" OnValidSubmit="Crear" Procesando="procesando"/>
+
+@code {
+	private Provedor provedor = new Provedor();
+	private bool procesando = false;
+
+	private async Task Crear()
+	{ 
+		procesando = true;
+
+		bool confirmed = await js.Confirm("¿Guardar provedor?");
+
+		if (confirmed)
+		{
+
+			provedor.EmpresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+
+			var respuesta = await manager.Post<Provedor, long>("api/provedores/CrearProvedor", provedor);
+
+			if (respuesta.Estado == EstadosDeRespuesta.Error)
+			{
+				await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+			}
+			else
+			{
+				navigationManager.NavigateTo("/provedores");
+			}
+		}
+		procesando = false;
+	}
+}

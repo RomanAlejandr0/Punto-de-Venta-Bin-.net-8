@@ -1,0 +1,148 @@
+﻿@page "/provedores"
+@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+@inject AuthenticationStateProvider auth
+@attribute [Authorize]
+
+<PageTitle>Provedores</PageTitle>
+
+<h5 class="border-start border-2 ps-1">Provedores</h5>
+<p>Aquí podrán crear, editar y eliminar provedores.</p>
+
+<div class="row g-2">
+    @*Busqueda*@
+    <div class="col-3">
+        <div class="input-group">
+            <input type="text" class="form-control" list="opciones" @bind="PalabraBusqueda" @bind:event="oninput" id="DatalistProductos" aria-label="Recipient's username" aria-describedby="button-addon2" placeholder="Escribe para buscar..." />
+            <button class="btn btn-outline-secondary" type="button"
+                    @onclick="(() => { PalabraBusqueda = string.Empty;})">
+                Limpiar
+            </button>
+        </div>
+
+        <datalist id="opciones">
+            @foreach (var item in opciones)
+            {
+                if (item.ToUpper().Contains(PalabraBusqueda.ToUpper()) && PalabraBusqueda.Length > 1)
+                {
+                    <option @onclick="() => PalabraBusqueda = item" value="@item" />
+                }
+            }
+        </datalist>
+    </div>
+
+    <div class="col-auto">
+        <a class="btn btn-primary" href="/provedores/crear">Nuevo Provedor</a>
+    </div>
+</div>
+
+<ListadoGenerico Listado="Provedores">
+    <HayRegistros>
+        <div class="table-responsive py-3">
+            <table class="table table-sm table-bordered table-hover align-middle shadow-sm">
+                <thead>
+                    <tr class="table-primary text-center">
+                        <th scope="col">
+                            <p class="mx-2 d-inline">Provedor</p>
+                            <span class="badge rounded-pill bg-primary border btn" @onclick="OrdenarPorNombre">
+                                <i class="bi bi-arrow-down-up"></i>
+                            </span>
+                        </th>
+                        <th scope="col">Empresa</th>
+                        <th scope="col">Telefono Negocio</th>
+                        <th scope="col">Telefono Celular</th>
+                        <th scope="col">Correo Electronico</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var provedor in Provedores.Where(p => p.Nombre.ToUpper().Contains(PalabraBusqueda.ToUpper())))
+                    {
+                        <tr class="bg-white text-center align-middle">
+                            <td scope="row" class="text-start px-3">@provedor.Nombre</td>
+                            <td>@provedor.Empresa</td>
+                            <td>@provedor.TelefonoNegocio</td>
+                            <td>@provedor.TelefonoCelular</td>
+                            <td>@provedor.CorreoElectronico</td>
+                            <td class="align-items-center">
+                                <div class="row g-1 row-cols-1 row-cols-lg-2">
+                                    <div class="col-auto">
+                                        <a class="btn btn-sm btn-outline-warning" href="/provedores/editar/@provedor.Id" title="Editar Usuario">
+                                            <i class="bi bi-gear-fill"></i>
+                                        </a>
+                                    </div>
+                                    <div class="col-auto">
+                                        <button class="btn btn-sm btn-outline-danger" @onclick="(() => Borrar(provedor))" title="Borrar Usuario">
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </HayRegistros>
+</ListadoGenerico>
+
+
+@code {
+    public string PalabraBusqueda { get; set; } = string.Empty;
+    List<string> opciones = new List<string>();
+
+    private bool ordenadosPorNombreAscendente = true;/*A-Z*/
+    public List<Provedor> Provedores { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Cargar();
+    }
+
+    protected async Task Cargar()
+    {
+        var EmpresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+
+        var respuesta = await manager.Get<List<Provedor>>($"api/provedores/GetAll/{EmpresaId}");
+        if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+
+        }
+        else
+        {
+            Provedores = respuesta.Datos;
+            opciones = Provedores.Select(p => p.Nombre).Distinct().ToList();
+        }
+
+    }
+
+    private async Task Borrar(Provedor provedor)
+    {
+        var respuesta = await manager.Post<Provedor, int>($"api/provedores/EliminarProvedor", provedor);
+
+        if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            await Cargar();
+        }
+    }
+
+    private void OrdenarPorNombre()
+    {
+        ordenadosPorNombreAscendente = !ordenadosPorNombreAscendente;
+
+        if (ordenadosPorNombreAscendente)
+        {
+            Provedores = Provedores.OrderBy(p => p.Nombre).ToList();
+        }
+        else
+        {
+            Provedores = Provedores.OrderByDescending(p => p.Nombre).ToList();
+        }
+    }
+
+}

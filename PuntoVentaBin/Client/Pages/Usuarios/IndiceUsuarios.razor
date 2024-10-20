@@ -1,0 +1,96 @@
+﻿@page "/usuarios"
+@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+@inject AuthenticationStateProvider auth
+@attribute [Authorize]
+
+<PageTitle>Usuarios</PageTitle>
+
+<h5 class="border-start border-2 ps-1">Usuarios</h5>
+<p>
+    Aquí podran crear, editar  y asignarles roles a los Usuarios.
+    (Por el momento la aplicacion solo contara con un usuario unico.)
+</p>
+
+<div class="row g-2 mt-5">
+    @*
+    <div class="col-auto">
+    <a class="btn btn-primary" href="/usuarios/crear">Nuevo Usuario</a>
+    </div>*@
+</div>
+
+<ListadoGenerico Listado="Usuarios">
+    <HayRegistros>
+        <div class="table-responsive py-3">
+            <table class="table table-sm table-bordered table-hover align-middle shadow-sm">
+                <thead>
+                    <tr class="table-primary text-center">
+                        <th scope="col">Nombre de Usuario</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Rol</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var usuario in Usuarios)
+                    {
+                        <tr class="bg-white text-center align-middle">
+                            <td scope="row" class="text-start px-3">@usuario.Nombre</td>
+                            <td>@usuario.Email</td>
+                            @* @if (usuario.RolId == 1)
+                            { *@
+                                <td>Administrador</td>
+
+@*                             } *@
+                            <td class="align-items-center">
+                                @*<div class="row g-1 row-cols-1 row-cols-lg-2">
+                            <div class="col-auto">
+                            <a class="btn btn-sm btn-outline-warning" href="/usuarios/editar/@usuario.Id" title="Editar Usuario">
+                            <i class="bi bi-gear-fill"></i>
+                            </a>
+                            </div>
+                            <div class="col-auto">
+                            <button class="btn btn-sm btn-outline-danger" @onclick="(() => Borrar(usuario))" title="Borrar Usuario">
+                            <i class="bi bi-trash3-fill"></i>
+                            </button>
+                            </div>
+                            </div>*@
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </HayRegistros>
+</ListadoGenerico>
+
+@code {
+    public List<UsuarioBin> Usuarios { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Cargar();
+    }
+
+    protected async Task Cargar()
+    {
+        var EmpresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+
+        var respuesta = await manager.Get<List<UsuarioBin>>($"api/usuarios/GetAll/{EmpresaId}");
+        Usuarios = respuesta.Datos;
+    }
+
+    protected async Task Borrar(UsuarioBin usuario)
+    {
+        var respuesta = await manager.Post<UsuarioBin, long>($"api/usuarios/EliminarUsuario", usuario);
+
+        if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            await Cargar();
+        }
+    }
+}

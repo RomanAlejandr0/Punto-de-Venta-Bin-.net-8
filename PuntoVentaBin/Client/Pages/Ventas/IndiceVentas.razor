@@ -1,0 +1,20 @@
+﻿@page "/ventas"
+
+@inject AuthenticationStateProvider auth
+@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+
+@attribute [Authorize]
+
+
+<PageTitle>Ventas</PageTitle>
+
+<h5 class="border-start border-2 ps-1 my-3">Area de Ventas</h5>
+
+<FormularioVentas venta="venta" />
+
+@code {
+    private bool EstoyCargando = true;
+
+    public Venta venta = new Venta { VentaDetalles = new List<VentaDetalle>() };
+}

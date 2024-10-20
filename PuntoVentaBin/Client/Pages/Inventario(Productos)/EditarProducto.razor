@@ -1,0 +1,68 @@
+﻿@page "/productos/editar/{ProductoId:long}"
+@inject IManager manager
+@inject NavigationManager navigationManager
+@inject IJSRuntime js
+@inject IMostrarMensajes mostrarMensajes
+@attribute [Authorize]
+
+<h5 class="border-start border-2 ps-1 mb-3">Editar Producto</h5>
+
+@if (producto == null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <FormularioProductos Producto="producto" OnValidSubmit="Editar" Procesando="procesando" />
+}
+
+@code {
+    private Producto producto { get; set; }
+
+    [Parameter] public long ProductoId { get; set; }
+
+    private bool procesando = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var respuesta = await manager.Get<Producto>($"api/productos/{ProductoId}");
+
+        if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            producto = respuesta.Datos;
+        }
+    }
+
+    private async Task Editar()
+    {
+        procesando = true;
+
+        bool confirmed = await js.Confirm("¿Guardar producto?");
+
+        if (confirmed)
+        {
+            if (producto.CodigoBarras != null && producto.CodigoBarras != string.Empty)
+            {
+                producto.CodigoBarras.Trim();
+            }
+
+            var respuesta = await manager.Post<Producto, long>("api/productos/EditarProducto", producto);
+
+            if (respuesta.Estado == EstadosDeRespuesta.Error)
+            {
+                await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+            }
+            else
+            {
+                navigationManager.NavigateTo("/productos");
+            }
+
+        }
+        
+        procesando = false;
+    }
+}

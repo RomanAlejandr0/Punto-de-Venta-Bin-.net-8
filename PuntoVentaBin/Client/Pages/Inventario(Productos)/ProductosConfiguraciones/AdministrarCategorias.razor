@@ -1,0 +1,271 @@
+﻿@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+@inject AuthenticationStateProvider auth
+@inject IJSRuntime js
+
+
+@if (CargandoData)
+{
+    <text>Cargando...</text>
+}
+else
+{
+    <h5 class="border-start border-2 ps-1">Administrar Categorias</h5>
+
+    <div class="row g-3 mt-1">
+
+        <div class="col-6">
+            <button class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#edicionCategoria" disabled="@(Procesando == true)">Nueva Categoria</button>
+
+            <div class="container-fluid border rounded-start" style="height: 240px; overflow-y: scroll;">
+
+                @if (Categorias == null)
+                {
+                    <text>Cargando...</text>
+                }
+                else if (Categorias.Count == 0)
+                {
+                    <text>No hay registros para mostrar</text>
+                }
+                else
+                {
+                    <div class="table-responsive py-2">
+                        <table class="table table-sm table-hover align-middle">
+                            <thead>
+                                <tr class="table-success text-center">
+                                    <th scope="col">
+
+                                        <p class="mx-2 d-inline">Descripcion</p>
+
+                                        <span class="badge rounded-pill bg-primary border btn" @onclick="OrdenarCategorias">
+                                            <i class="bi bi-arrow-down-up"></i>
+                                        </span>
+
+                                    </th>
+                                    <th scope="col"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var categoria in Categorias)
+                                {
+                                    <tr class="bg-white text-center align-middle">
+
+                                        <td scope="row" style="width:360px;">@categoria.Nombre</td>
+
+                                        <td class="align-items-center" style="width:140px;">
+                                            <div class="row g-1 row-cols-1 row-cols-lg-2">
+
+                                                <div class="col-auto">
+                                                    <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#edicionCategoria" title="Editar Producto" 
+                                                            @onclick="@(() => Editar(categoria))" disabled="@(Procesando == true)">
+                                                        <i class="bi bi-pen-fill"></i>
+                                                    </button>
+                                                </div>
+
+                                                <div class="col-auto">
+                                                    <button class="btn btn-sm btn-outline-danger" @onclick="(() => BorrarCategoria(categoria))" title="Borrar Producto" 
+                                                            disabled="@(Procesando == true)">
+                                                        <i class="bi bi-trash3-fill"></i>
+                                                    </button>
+                                                </div>
+
+                                            </div>
+                                        </td>
+
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal -->
+<div class="modal fade" id="edicionCategoria" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="edicionCategoriaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                @if (categoriaEdicion.Id == 0)
+                {
+                    <h5 class="modal-title" id="edicionCategoriaLabel">Nueva Categoria</h5>
+                }
+                else
+                {
+                    <h5 class="modal-title" id="edicionCategoriaLabel">Editar Categoria</h5>
+                }
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                
+                <div class="row mt-2 g-0">
+                    <label class="col-3 col-form-label">Categoria:</label>
+                    
+                    <div class="col-9">
+                        <input class="form-control" @bind="categoriaEdicion.Nombre" />
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @onclick="GuardarCategoria" 
+                        disabled="@(Procesando == true)">
+                    Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private long empresaId = new long();
+    private bool CargandoData = new bool();
+    public bool Procesando = false;
+
+    private bool categoriasOrdenadasPorNombreAscendente = true;/*A-Z*/
+
+    public Categoria categoriaEdicion = new Categoria();
+    public List<Categoria> Categorias = new List<Categoria>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        CargandoData = true;
+
+        empresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+
+        await CargarCategorias();
+
+        CargandoData = false;
+    }
+
+    protected async Task CargarCategorias()
+    {
+        var respuesta = await manager.Get<List<Categoria>>($"Categorias/GetAll/{empresaId}");
+        if (respuesta.Estado == EstadosDeRespuesta.Correcto)
+        {
+            Categorias = respuesta.Datos;
+        }
+
+        await ComprobarEstatusRespuesta(respuesta.Estado, respuesta.Mensaje);
+    }
+
+    private void NuevaCategoria()
+    {
+        categoriaEdicion = new Categoria();
+    }
+
+    private void Editar(Categoria value)
+    {
+        categoriaEdicion.Id = value.Id;
+        categoriaEdicion.EmpresaId = value.EmpresaId;
+        categoriaEdicion.Nombre = value.Nombre;
+    }
+
+    private async Task GuardarCategoria()
+    {
+        categoriaEdicion.EmpresaId = empresaId;
+
+        if (categoriaEdicion.Id == 0 && Categorias.Exists(x => x.Nombre.Trim().ToUpper() == categoriaEdicion.Nombre.Trim().ToUpper()))
+        {
+            await mostrarMensajes.MostrarMensajeError("Ya existe una categoria con un nombre similar");
+
+            return;
+        }
+        else if (categoriaEdicion.Id != 0 && Categorias.Exists(x => x.Nombre.Trim().ToUpper() == categoriaEdicion.Nombre.Trim().ToUpper() && x.Id != categoriaEdicion.Id))
+        {
+            await mostrarMensajes.MostrarMensajeError("Ya existe una categoria con un nombre similar");
+
+            return;
+        }
+        else
+        {
+            Procesando = true;
+
+            var respuesta = await manager.Post<Categoria, long>($"categorias/Guardar", categoriaEdicion);
+
+            if (respuesta.Estado == EstadosDeRespuesta.Correcto)
+            {
+                if (Categorias.Exists(x => x.Id == categoriaEdicion.Id))
+                {
+                    Categorias.FirstOrDefault(x => x.Id == categoriaEdicion.Id).Nombre = categoriaEdicion.Nombre;
+                }
+                else
+                {
+                    categoriaEdicion.Id = respuesta.Datos;
+                    Categorias.Add(categoriaEdicion);
+                }
+
+                categoriaEdicion = new Categoria();
+            }
+            else
+            {
+                await ComprobarEstatusRespuesta(respuesta.Estado, respuesta.Mensaje);
+            }
+
+            Procesando = false;
+        }
+    }
+
+    private async Task BorrarCategoria(Categoria categoria)
+    {
+        Procesando = true;
+
+        bool confirmed = await js.Confirm("¿Eliminar la categoria? Se le retirara a los productos que la tienen");
+
+        if (confirmed)
+        {
+
+            var respuesta = await manager.Post<Categoria, long>($"categorias/EliminarCategoria", categoria);
+
+            if (respuesta.Estado == EstadosDeRespuesta.Error)
+            {
+                await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+            }
+            else
+            {
+                Categorias.Remove(categoria);
+            }
+
+        }
+        
+        Procesando = false;
+    }
+
+    private async Task ComprobarEstatusRespuesta(EstadosDeRespuesta estadoRespuesta, string mensajeRespuesta)
+    {
+        if (estadoRespuesta == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(mensajeRespuesta);
+            Console.WriteLine(mensajeRespuesta);
+        }
+        else if (estadoRespuesta == EstadosDeRespuesta.NoProceso)
+        {
+            await mostrarMensajes.MostrarMensajeError("Peticion No Procesada");
+            Console.WriteLine("Peticion No Procesada");
+        }
+    }
+
+    private async Task CancelarEdicion()
+    {
+        categoriaEdicion = new Categoria();
+
+        await js.InvokeAsync<object>("toggleModal", "#exampleModal");
+    }
+
+    private void OrdenarCategorias()
+    {
+        categoriasOrdenadasPorNombreAscendente = !categoriasOrdenadasPorNombreAscendente;
+
+        if (categoriasOrdenadasPorNombreAscendente)
+        {
+            Categorias = Categorias.OrderBy(p => p.Nombre).ToList();
+        }
+        else
+        {
+            Categorias = Categorias.OrderByDescending(p => p.Nombre).ToList();
+        }
+    }
+}

@@ -1,0 +1,222 @@
+﻿@using PuntoVentaBin.Shared.Identidades.Catalogos;
+@inject IManager http
+
+<div class="row g-1">
+    <label class="col-form-label col-3">Codigo Postal</label>
+
+    <div class="col-md-9">
+        <input type="text" @bind-value="@CodigoPostal" class="form-control" title="Codigo Postal" />
+        @*<RadzenRequiredValidator Component="CodigoPostal" Text="El Codigo Postal es requerido!" Popup="true" />*@
+    </div>
+</div>
+
+<br />
+
+<div class="row">
+    <label class="col-form-label col-3">Numero Exterior</label>
+
+    <div class="col-md-9">
+        <input type="text" @bind-value="@Domicilio.NumeroExterior" Class="form-control" title="Numero Exterior"></input>
+    </div>
+</div>
+
+<br />
+
+<div class="row">
+    <label class="col-form-label col-3">Calle</label>
+
+    <div class="col-md-9">
+        <input type="text" @bind-value="@Domicilio.Calle" Class="form-control" title="Calle"></input>
+    </div>
+</div>
+
+<br />
+
+<div>
+    @if (CodigosPostales.Count > 0)
+    {
+        <div class="row">
+            <label class="col-form-label col-3">Colonia</label>
+
+            <div class="col-md-9">
+                <select class="form-select" @bind="@Domicilio.Colonia" title="Colonia">
+                    @foreach (var cp in CodigosPostales.First().Colonias)
+                    {
+                        <option value="@cp.c_Colonia">@cp.NombreAsentamiento</option>
+                    }
+                </select>
+            </div>
+        </div>
+        
+        <br />
+        
+        <div class="row">
+            <label class="col-form-label col-3">Municipio</label>
+
+            <div class="col-md-9">
+                <select class="form-select" @bind="@Domicilio.Municipio" title="Municipio" disabled>
+                    @foreach (var cp in CodigosPostales)
+                    {
+                        <option value="@cp.Municipio.c_Municipio">@cp.Municipio.Descripcion</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <br />
+        
+        @if (CodigosPostales.First().Localidad != null)
+        {
+            <div class="row">
+                <label class="col-form-label col-3">Localidad</label>
+
+                <div class="col-md-9">
+                    <select class="form-select" @bind="@Domicilio.Localidad" title="Localidad" disabled>
+                        @foreach (var cp in CodigosPostales)
+                        {
+                            <option value="@cp.Localidad.c_Localidad">@cp.Localidad.Descripcion</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        }
+
+        
+        <br />
+        
+        <div class="row">
+            <label class="col-form-label col-3">Estado</label>
+
+            <div class="col-md-9">
+                <select class="form-select" @bind="@Domicilio.Estado" title="Estado" disabled>
+                    @foreach (var cp in CodigosPostales)
+                    {
+                        <option value="@cp.Estado.c_Estado">@cp.Estado.Nombre</option>
+                    }
+                </select>
+            </div>
+        </div>
+    }
+    else
+    {
+        <label>Por Favor ingrese un Codigo Postal Valido</label>
+    }
+    <br />
+</div>
+
+
+@code {
+    private bool _procesando;
+
+    [Parameter]
+    public bool Procesando
+    {
+        get
+        {
+            return _procesando;
+        }
+
+        set
+        {
+            _procesando = value;
+        }
+    }
+    [Parameter]
+    public EventCallback<bool> ProcesandoChanged { get; set; }
+
+    private Domicilio _domicilio;
+    [Parameter]
+    public Domicilio Domicilio
+    {
+        get
+        {
+            return _domicilio;
+        }
+        set
+        {
+            _domicilio = value;
+        }
+    }
+
+    [Parameter]
+    public EventCallback<Domicilio> DomicilioChanged { get; set; }
+
+    public List<CodigosPostales> CodigosPostales { get; set; } = new List<CodigosPostales>();
+    private string _codigoPostal;
+
+    [Parameter]
+    public string CodigoPostal
+    {
+        get
+        {
+            return _codigoPostal;
+        }
+        set
+        {
+            if (_codigoPostal != value)
+            {
+                _codigoPostal = value;
+                if (!string.IsNullOrEmpty(value))
+                {
+                    BuscarCodigoPostal(value);
+                }
+            }
+        }
+    }
+
+    [Parameter]
+    public EventCallback<string> CodigoPostalChanged { get; set; }
+
+    protected async Task BuscarCodigoPostal(string codigoPostal)
+    {
+        Procesando = true;
+        StateHasChanged();
+        Task.Delay(1);
+
+        //Toaster.Add("Buscando CP", MatToastType.Info);
+        var respuesta = await http.Post<string, List<CodigosPostales>>("Catalogos/ValidarCodigoPostal", codigoPostal).ConfigureAwait(false);
+        if (respuesta.Estado == EstadosDeRespuesta.Correcto)
+        {
+            if (respuesta.Datos.Count == 0)
+            {
+                CodigosPostales.Clear();
+            }
+            else if (respuesta.Datos.Count == 1)
+            {
+                if (Domicilio.Id == 0)
+                {
+                    Domicilio.CodigoPostal = codigoPostal;
+                    Domicilio.Colonia = respuesta.Datos.First().Colonias.First().c_Colonia;
+                    Domicilio.Estado = respuesta.Datos.First().Estado.c_Estado;
+                    Domicilio.Localidad = respuesta.Datos.First().Localidad != null ? respuesta.Datos.First().Localidad.c_Localidad : "";
+                    Domicilio.Municipio = respuesta.Datos.First().Municipio.c_Municipio;
+                    Domicilio.Pais = respuesta.Datos.First().Estado.c_Pais;
+                }
+            }
+            else
+            {
+                if (Domicilio.Id == 0)
+                {
+                    Domicilio.CodigoPostal = codigoPostal;
+                    Domicilio.Colonia = respuesta.Datos.First().Colonias.First().c_Colonia;
+                    Domicilio.Estado = respuesta.Datos.First().Estado.c_Estado;
+                    Domicilio.Localidad = respuesta.Datos.First().Localidad != null ? respuesta.Datos.First().Localidad.c_Localidad : "";
+                    Domicilio.Municipio = respuesta.Datos.First().Municipio.c_Municipio;
+                    Domicilio.Pais = respuesta.Datos.First().Estado.c_Pais;
+                }
+            }
+            CodigosPostales = respuesta.Datos;
+        }
+        else
+        {
+            //Toaster.Add(respuesta.Mensaje, MatToastType.Warning);
+            CodigosPostales.Clear();
+            Console.WriteLine(respuesta.Mensaje);
+        }
+
+        Procesando = false;
+        StateHasChanged();
+    }
+}
+
+

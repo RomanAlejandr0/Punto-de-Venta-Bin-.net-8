@@ -1,0 +1,366 @@
+﻿@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+@inject AuthenticationStateProvider auth
+@inject NavigationManager navigationManager
+@inject IJSRuntime js
+
+<EditForm Model="Producto" OnValidSubmit="OnValidSubmit">
+    <div class="row g-2">
+
+        <div class="col-lg-2">
+            <label class="form-label" for="codigoBarras">Codigo barras:</label>
+            <InputText class="form-control" id="codigoBarras" @bind-Value="@Producto.CodigoBarras" />
+        </div>
+
+        <div class="col-lg-5">
+            <label class="form-label" for="descripcionProducto">Producto:</label>
+            <InputText class="form-control" id="descripcionProducto" placeholder="Descripcion completa del producto" @bind-Value="@Producto.Descripcion" />
+        </div>
+
+        <div class="col-12 col-lg-3">
+            <label class="form-label">Categoria:</label>
+
+            <InputSelect class="form-select" @bind-Value="Producto.Categoria">
+                <option selected value="">Seleccione (opcional)</option>
+
+                @foreach (var categoria in Categorias)
+                {
+                    <option value="@categoria.Nombre">@categoria.Nombre</option>
+                }
+            </InputSelect>
+        </div>
+
+        <div class="col-2">
+            <label class="form-label">Se vende por:</label>
+
+            <select class="form-select" @bind="Producto.Presentacion">
+                <option value="Unidad">Por Unidad/Pza</option>
+                <option value="Granel">A Granel (Usa Decimales)</option>
+                @* <option value="Paquete">Paquete</option> *@
+
+            </select>
+        </div>
+    </div>
+
+    <div class="row g-2 mt-3 d-flex align-items-end">
+
+        <div class="col-12 col-md-3">
+            <label class="form-label">Precio Compra:</label>
+            <div class="input-group">
+                <span class="input-group-text">$</span>
+                <InputNumber class="form-control text-end" @bind-Value="@Producto.PrecioCompra" />
+            </div>
+        </div>
+
+        <div class="col-12 col-md-3">
+            <label class="form-label">Precio Venta:</label>
+            <div class="input-group">
+                <span class="input-group-text">$</span>
+                <InputNumber class="form-control text-end" @bind-Value="@Producto.PrecioVenta"/>
+            </div>
+        </div>
+
+        <div class="col-3">
+            <div class="input-group">
+                <label></label>
+                <div class="input-group-text">
+                    <input class="form-check-input mt-0" type="checkbox" @bind="utilizaInventario" aria-label="">
+                </div>
+                <input type="text" class="form-control bg-white text-black" placeholder="Habilitar inventario"
+                       aria-label="" disabled title="Si desabilitas esta casilla tu producto no sera inventariado y podras vender cantidades ilimitadas(Servicio)">
+            </div>
+        </div>
+
+        <div class="col-12 col-md-3">
+            <label class="form-label">Inventario:</label>
+
+            @if (Producto.Presentacion == "Unidad")
+            {
+                <InputNumber class="form-control text-end" @bind-Value="@Producto.CantidadInventario"
+                             disabled="@(utilizaInventario == false)" step="1" />
+            }
+            else if (Producto.Presentacion == "Granel")
+            {
+                <InputNumber class="form-control text-end" @bind-Value="@Producto.CantidadInventario"
+                             disabled="@(utilizaInventario == false)" step="0.001" />
+            }
+            else if (Producto.Presentacion == "Paquete")
+            {
+                <input class="form-control text-end bg-white" @bind="@Producto.CantidadInventario"
+                       disabled step="1" readonly />
+            }
+        </div>
+
+    </div>
+
+
+    @* @if (Producto.Presentacion == "Paquete")
+    {
+        <h5 class="border-start border-2 ps-1 my-3">Productos del Paquete</h5>
+
+        <div class="row g-2">
+
+            <div class="col-3">
+                <input type="text" class="form-control" list="opciones" @bind="PalabraBusqueda" @bind:event="oninput"
+                       id="DatalistProductos" placeholder="Escribe para buscar..." />
+                <datalist id="opciones">
+                    @foreach (var item in opciones)
+                    {
+                        if (item.ToUpper().Contains(PalabraBusqueda.ToUpper()) && PalabraBusqueda.Length > 1)
+                        {
+                            <option value="@item" />
+                        }
+                    }
+                </datalist>
+            </div>
+
+            <div class="col-2">
+                <div class="input-group">
+                    <span class="input-group-text">Cantidad:</span>
+
+                    <input type="number" class="form-control text-end" aria-label="Cantidad"
+                           @bind="@CantidadEdicion" disabled="@(ProductoBusquedaKit.Id == 0)" @onkeydown="@(e => Enter(e))">
+                </div>
+            </div>
+
+            <div class="col-3">
+                <div class="btn-group" role="group">
+                    <button class="btn btn-outline-secondary" type="button"
+                            @onclick="(() => { PalabraBusqueda = string.Empty; CantidadEdicion = 0; })">
+                        Limpiar
+                    </button>
+
+                    <button type="button" class="btn btn-outline-primary" @onclick="AgregarProductoPaquete"
+                            disabled="@(ProductoBusquedaKit.Id == 0 || CantidadEdicion == 0)">
+                        Agregar al paquete
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="mt-3 border rounded-start shadow-sm" style="width:60%; height: 45vh; overflow: scroll;">
+
+            @if (Producto.ProductosPaquete.Count == 0)
+            {
+
+                <p class="p-3">No hay productos en el paquete</p>
+            }
+            else
+            {
+                <div class="table-responsive py-3">
+                    <table class="table table-sm table-bordered table-hover align-middle shadow-sm">
+                        <thead>
+                            <tr class="table-success text-center">
+                                <th scope="col">
+                                    <p class="mx-2 d-inline">Descripcion</p>
+                                </th>
+                                <th scope="col">Precio individual</th>
+                                <th scope="col">Cantidad</th>
+                                <th scope="col"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var producto in Producto.ProductosPaquete)
+                            {
+                                <tr class="bg-white text-center align-middle">
+                                    <td scope="row" class="text-start px-3">@producto.NombreProducto</td>
+                                    <td>@producto.PrecioVenta</td>
+                                    <td>@producto.Cantidad</td>
+                                    <td class="align-items-center">
+                                        <div class="row g-1 row-cols-md-2">
+                                            <div class="col-auto">
+                                                <button type="button" class="btn btn-sm btn-outline-danger" @onclick="(() => BorrarProducto(producto))"
+                                                        title="Borrar Producto">
+                                                    <i class="bi bi-trash3-fill"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    } *@
+
+    <div class="row g-1 my-4">
+
+        <div class="col-md-2 offset-md-8">
+            <button class="btn btn-danger w-100" @onclick="Cancelar" disabled="@(Procesando == true)">Cancelar</button>
+        </div>
+
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100" disabled="@(Procesando == true)">
+                Guardar Cambios
+            </button>
+        </div>
+    </div>
+
+    @* <h5 class="border-start border-2 ps-1 mb-3">Lotes</h5>
+
+    <IndiceLotes @bind-Producto="producto" empresaId="empresaId" />*@
+</EditForm>
+
+@code {
+    [Parameter] public Producto Producto { get; set; }
+    [Parameter] public bool Procesando { get; set; }
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+
+    ElementReference textCantidad;
+
+    private long empresaId = new long();
+
+    List<string> opciones = new List<string>();
+
+    public string _palabraBusqueda { get; set; } = string.Empty;
+    public string PalabraBusqueda
+    {
+        get { return _palabraBusqueda; }
+        set
+        {
+            _palabraBusqueda = value;
+
+            if (!string.IsNullOrEmpty(_palabraBusqueda))
+            {
+
+                if (ProductosListaCompleta.Any(x => x.Descripcion == _palabraBusqueda) || ProductosListaCompleta.Any(x => x.CodigoBarras == _palabraBusqueda))
+                {
+                    ProductoBusquedaKit = ProductosListaCompleta.FirstOrDefault(x => x.Descripcion.ToLower() == PalabraBusqueda.ToLower());
+                }
+                else
+                {
+                    ProductoBusquedaKit = new Producto();
+                }
+            }
+        }
+    }
+
+    protected decimal CantidadEdicion = new decimal();
+
+    protected Producto ProductoBusquedaKit = new Producto();
+    public List<Producto> ProductosListaCompleta { get; set; } = new List<Producto>();
+
+    protected bool utilizaInventario = true;
+
+    public List<Categoria> Categorias = new List<Categoria>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        empresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+
+        await CargarProductos();
+        await CargarCategorias();
+    }
+
+    protected async Task CargarProductos()
+    {
+        var respuesta = await manager.Get<List<Producto>>($"api/productos/GetAll/{empresaId}");
+
+        if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            ProductosListaCompleta = respuesta.Datos;
+            opciones = ProductosListaCompleta.Select(p => p.Descripcion).Distinct().ToList();
+        }
+    }
+
+    protected async Task CargarCategorias()
+    {
+        var respuesta = await manager.Get<List<Categoria>>($"Categorias/GetAll/{empresaId}");
+
+        if (respuesta.Estado == EstadosDeRespuesta.Correcto)
+        {
+            Categorias = respuesta.Datos;
+        }
+        else
+        {
+            await ComprobarEstatusRespuesta(respuesta.Estado, respuesta.Mensaje);
+        }
+    }
+
+    // private void AgregarProductoPaquete()
+    // {
+    //     var productoPaquete = new ProductoPaquete()
+    //         {
+    //             ProductoId = ProductoBusquedaKit.Id,
+    //             Cantidad = CantidadEdicion,
+    //             PrecioVenta = ProductoBusquedaKit.PrecioVenta,
+    //             NombreProducto = ProductoBusquedaKit.Descripcion
+    //         };
+
+    //     Producto.PrecioVenta += (productoPaquete.Cantidad * productoPaquete.PrecioVenta);
+
+    //     Producto.ProductosPaquete.Add(productoPaquete);
+
+    //     PalabraBusqueda = "";
+    //     ProductoBusquedaKit = new Producto();
+    //     CantidadEdicion = 0;
+
+    //     return;
+    // }
+
+    // private async Task BorrarProducto(ProductoPaquete productoPaquete)
+    // {
+    //     if (productoPaquete.Id == 0)
+    //     {
+    //         Producto.ProductosPaquete.Remove(productoPaquete);
+    //     }
+    //     else if (productoPaquete.Id != 0)
+    //     {
+    //         var respuesta = await manager.Post<ProductoPaquete, bool>($"api/Productos/EliminarProductoPaquete", productoPaquete);
+
+    //         if (respuesta.Estado == EstadosDeRespuesta.Correcto)
+    //         {
+
+    //             await mostrarMensajes.MostrarMensajeExitoso(respuesta.Mensaje);
+    //             Producto.ProductosPaquete.Remove(productoPaquete);
+    //         }
+    //         else
+    //         {
+    //             await ComprobarEstatusRespuesta(respuesta.Estado, respuesta.Mensaje);
+    //         }
+
+    //     }
+    //     Producto.PrecioVenta -= (productoPaquete.Cantidad * productoPaquete.PrecioVenta);
+    // }
+
+    private async Task ComprobarEstatusRespuesta(EstadosDeRespuesta estadoRespuesta, string mensajeRespuesta)
+    {
+        if (estadoRespuesta == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(mensajeRespuesta);
+            Console.WriteLine(mensajeRespuesta);
+        }
+        else if (estadoRespuesta == EstadosDeRespuesta.NoProceso)
+        {
+            await mostrarMensajes.MostrarMensajeError("Peticion No Procesada");
+            Console.WriteLine("Peticion No Procesada");
+        }
+    }
+
+    private void Cancelar()
+    {
+        navigationManager.NavigateTo("/productos");
+    }
+
+    private void Enter(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+        {
+            HacerNada();
+        }
+    }
+
+    private void HacerNada()
+    {
+        return;
+    }
+
+    
+}

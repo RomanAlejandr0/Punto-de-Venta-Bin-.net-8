@@ -1,0 +1,76 @@
+﻿body {
+    margin-top: 0px;
+    background-color: #ffffff; /* Fondo blanco */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    color: #000 !important;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #004085;
+    }
+
+.btn-outline-primary {
+    border-color: #007bff;
+    color: #007bff;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+    .btn-outline-primary:hover {
+        background-color: #0056b3;
+        color: #ffffff;
+    }
+
+.card {
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: none;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+    .card:hover {
+        transform: translateY(-10px) scale(1.05);
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+    }
+
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+    border-top-left-radius: 0.75rem;
+    border-top-right-radius: 0.75rem;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    color: #333333;
+}
+
+.card-text {
+    color: #555555;
+}
+
+.modal-header {
+    background-color: #007bff;
+    color: #ffffff;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+}
+
+/* Responsividad de la Navbar */
+@media (max-width: 992px) {
+    .navbar-nav {
+        text-align: center;
+    }
+}

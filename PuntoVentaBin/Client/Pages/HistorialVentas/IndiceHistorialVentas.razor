@@ -1,0 +1,220 @@
+﻿@page "/historial"
+@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+@inject AuthenticationStateProvider auth
+@attribute [Authorize]
+
+<PageTitle>Historial Ventas</PageTitle>
+
+<h5 class="border-start border-2 ps-1">Historial Ventas</h5>
+
+<div class="row g-2 mb-5 mt-2">
+    <div class="col-5">
+        <div class="input-group">
+            <span class="input-group-text">Buscar por Fecha:</span>
+            <input type="date" aria-label="Fecha Inicio" class="form-control" @bind="PeriodoFecha.FechaInicio">
+            <input type="date" aria-label="Fecha Fin" class="form-control" @bind="PeriodoFecha.FechaFin" min="@DateTime.Now">
+        </div>
+    </div>
+
+    <div class="col-2">
+        <button class="btn btn-primary w-100" @onclick="@CargarVentas">Buscar</button>
+    </div>
+</div>
+
+<ListadoGenerico Listado="Ventas">
+    <HayRegistros>
+        <div class="table-responsive mt-3">
+            <table class="table caption-top text-center">
+                <caption>
+                    @($"Numero de Ventas: {Ventas.Count} ___ Total Vendido: {CalcularTotalVendido()}")
+                </caption>
+                <thead>
+                    <tr class="table-success">
+                        <th>#</th>
+                        <th scope="col">Cliente</th>
+                        <th scope="col">Fecha Hora Venta</th>
+                        <th scope="col">Subtotal</th>
+                        <th scope="col">Total</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var venta in Ventas)
+                    {
+                        <tr>
+                            <td>@(Ventas.IndexOf(venta) + 1).</td>
+                            <td scope="col" class="text-start">@venta.NombreCliente</td>
+                            <td scope="col">@venta.FechaHoraVenta.ToString("dd-MM-yyyy HH:mm:ss")</td>
+                            <td scope="col">@venta.Subtotal.ToString("$0.00")</td>
+                            <td scope="col">@venta.Total.ToString("$0.00")</td>
+                            <td scope="col">
+                                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                        data-bs-target="#ModalDetalles" @onclick="(() => BuscarDetalles(venta.Id))">
+                                    Detalles
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </HayRegistros>
+</ListadoGenerico>
+
+
+<!--Modal de detalles-->
+<div class="modal fade" id="ModalDetalles" tabindex="-1" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Detalles</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <table class="table">
+                    <thead class="table-primary">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Producto</th>
+                            <th scope="col">Cantidad</th>
+                            <th scope="col">Precio</th>
+                            <th scope="col">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var value in VentaDetalles)
+                        {
+                            <tr>
+                                <th scope="row">@(VentaDetalles.IndexOf(value) + 1)</th>
+                                <td>@value.DescripcionProducto</td>
+                                <td>@value.Cantidad</td>
+                                <td>@value.Precio</td>
+                                <td>@value.Total</td>
+                            </tr>
+                        }
+                        <tr>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-warning"
+                        data-bs-dismiss="modal">
+                    Cerrar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private long empresaId = new long();
+
+    private List<ClienteDTO> ClientesDTOs { get; set; }
+
+    private FechaInicioFechaFin PeriodoFecha = new FechaInicioFechaFin() { FechaInicio = DateTime.Now, FechaFin = DateTime.Now };
+
+    public List<Venta> Ventas { get; set; }
+    public List<VentaDetalle> VentaDetalles { get; set; } = new List<VentaDetalle>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        empresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+
+        PeriodoFecha.EmpresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+
+        await CargarVentas();
+
+        await CargarClientes();
+    }
+
+    protected async Task CargarVentas()
+    {
+        var respuesta = await manager.Post<FechaInicioFechaFin, List<Venta>>($"api/ventas/GetVentas", PeriodoFecha);
+
+        if (respuesta.Estado == EstadosDeRespuesta.Correcto)
+        {
+            Ventas = respuesta.Datos;
+
+            if (ClientesDTOs != null)
+            {
+                foreach (var venta in Ventas)
+                {
+                    venta.NombreCliente = ClientesDTOs.FirstOrDefault(x => x.Id == venta.ClienteId).Nombre;
+                }
+            }
+        }
+        else
+        {
+            await ComprobarEstatusRespuesta(respuesta.Estado, respuesta.Mensaje);
+        }
+    }
+
+    protected async Task CargarClientes()
+    {
+        var respuesta = await manager.Get<List<ClienteDTO>>($"api/clientes/GetClientesDTOs/{empresaId}");
+
+        if (respuesta.Estado == EstadosDeRespuesta.Correcto)
+        {
+            ClientesDTOs = respuesta.Datos;
+
+            foreach (var venta in Ventas)
+            {
+                venta.NombreCliente = ClientesDTOs.FirstOrDefault(x => x.Id == venta.ClienteId).Nombre;
+            }
+        }
+        else
+        {
+            await ComprobarEstatusRespuesta(respuesta.Estado, respuesta.Mensaje);
+        }
+    }
+
+    private async Task BuscarDetalles(long ventaId)
+    {
+        var respuesta = await manager.Get<List<VentaDetalle>>($"api/ventas/GetVentaDetalles/{ventaId}");
+
+        if (respuesta.Estado == EstadosDeRespuesta.Correcto)
+        {
+            VentaDetalles = respuesta.Datos;
+        }
+        else
+        {
+            await ComprobarEstatusRespuesta(respuesta.Estado, respuesta.Mensaje);
+        }
+    }
+
+    private async Task ComprobarEstatusRespuesta(EstadosDeRespuesta estadoRespuesta, string mensajeRespuesta)
+    {
+        if (estadoRespuesta == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(mensajeRespuesta);
+        }
+        else if (estadoRespuesta == EstadosDeRespuesta.NoProceso)
+        {
+            await mostrarMensajes.MostrarMensajeError("Peticion No Procesada");
+        }
+    }
+
+    public decimal TotalVendido = 0;
+
+    protected string CalcularTotalVendido()
+    {
+        TotalVendido = 0;
+
+        foreach (var venta in Ventas)
+        {
+            TotalVendido += venta.Total;
+        }
+
+        return TotalVendido.ToString("$0.00");
+    }
+
+}

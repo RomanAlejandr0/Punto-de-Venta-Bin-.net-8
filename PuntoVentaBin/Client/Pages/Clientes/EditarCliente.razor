@@ -1,0 +1,61 @@
+﻿@page "/clientes/editar/{ClienteId:long}"
+@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+@inject NavigationManager navigationManager
+@inject IJSRuntime js
+@attribute [Authorize]
+
+<h3>Editar Cliente</h3>
+
+@if (cliente == null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <FormularioClientes OnValidSubmit="Editar" cliente="cliente" Procesando="procesando"/>
+}
+
+@code {
+    [Parameter] public long ClienteId { get; set; }
+    private Cliente cliente;
+    private bool procesando = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var respuesta = await manager.Get<Cliente>($"api/clientes/{ClienteId}");
+
+        if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            cliente = respuesta.Datos;
+        }
+    }
+
+    private async Task Editar()
+    {
+        procesando = true;
+
+        bool confirmed = await js.Confirm("¿Guardar cambios?");
+
+        if (confirmed)
+        {
+
+            var respuesta = await manager.Post<Cliente, long>("api/clientes/EditarCliente", cliente);
+
+            if (respuesta.Estado == EstadosDeRespuesta.Error)
+            {
+                await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+            }
+            else
+            {
+                navigationManager.NavigateTo("/clientes");
+            }
+        }
+        
+        procesando = false;
+    }
+}

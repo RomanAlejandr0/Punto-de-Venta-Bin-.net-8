@@ -1,0 +1,384 @@
+﻿@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+@inject NavigationManager navigationManager
+@inject AuthenticationStateProvider auth
+@inject IJSRuntime js
+
+@if (CargandoData)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <div class="row g-1">
+
+        <div class="col-md-6">
+
+            <div class="input-group input-group-sm shadow-sm">
+
+                <input id="AutocompleteProductos" type="text" @ref="textProductos" class="form-control"
+                       list="opcionesProductos" @bind="PalabraBusqueda" placeholder="Escribe el producto para buscar o lee el codigo"
+                @bind:event="oninput" @onchange="@ColocarProductoEdicion">
+
+                <button class="btn btn-outline-secondary" type="button"
+                @onclick="(() => { PalabraBusqueda = string.Empty; producto = new ProductoDTO(); ventaDetalleEdicion = new VentaDetalle();})">
+                    Limpiar
+                </button>
+
+            </div>
+
+            <datalist id="opcionesProductos">
+                @foreach (var item in opciones)
+                {
+                    if (item.ToUpper().Contains(PalabraBusqueda.ToUpper()) && PalabraBusqueda.Length >= 1)
+                    {
+                        <option @onclick="() => PalabraBusqueda = item" value="@item" />
+                    }
+                }
+            </datalist>
+        </div>
+
+        <div class="col-md-3">
+            <ListaProductos Productos="ProductosDTO" ProductosListaCompleta="ProductosDTO" OnSeleccionarProducto="SeleccionarProductoListaProductos" />
+        </div>
+
+        <div class="col-md-3">
+
+            <div class="input-group input-group-sm">
+                <input id="AutocompleteClientes" type="text" @ref="textClientes" class="form-control"
+                       list="opcionesClientes" @bind="PalabraBusquedaClientes" placeholder="Escribe el cliente para buscar"
+                @bind:event="oninput" @onchange="@ColocarClienteEdicion">
+
+                <ListaClientes Clientes="ClientesDTOs" ClientesListaCompleta="ClientesDTOs" OnSeleccionarCliente="SeleccionarClienteListaClientes" />
+
+                <datalist id="opcionesClientes">
+                    @foreach (var item in opcionesClientes)
+                    {
+                        if (item.ToUpper().Contains(PalabraBusquedaClientes.ToUpper()) && PalabraBusquedaClientes.Length >= 1)
+                        {
+                            <option @onclick="() => PalabraBusquedaClientes = item" value="@item" />
+                        }
+                    }
+                </datalist>
+
+                <button class="btn btn-outline-secondary" type="button"
+                @onclick="(() => { PalabraBusquedaClientes = string.Empty; cliente = new ClienteDTO(); })">
+                    Limpiar
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="row g-1 mt-2">
+
+        <div class="col-md-2">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text">Inventario:</span>
+
+                <input type="text" class="form-control bg-light text-end" title="Cantidad en Inventario" aria-label="Cantidad en Inventario"
+                       value="@producto.CantidadInventario.ToString("0.00")" disabled readonly>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text">Cantidad:</span>
+
+                <input @ref="textCantidad" type="number" class="form-control text-end" aria-label="Cantidad"
+                @bind="@ventaDetalleEdicion.Cantidad" @bind:event="oninput"
+                       min="1" max="@producto.CantidadInventario" disabled="@(producto.CantidadInventario == 0)">
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text">Precio:</span>
+
+                <input type="text" class="form-control bg-light text-end" placeholder="0" aria-label="PrecioIndividual"
+                       value="@ventaDetalleEdicion.Precio.ToString("$ 0.00")" disabled readonly>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text">Subtotal:</span>
+
+                <input type="text" class="form-control bg-light text-end" placeholder="0" aria-label="Subtotal"
+                       value="@((ventaDetalleEdicion.Cantidad * ventaDetalleEdicion.Precio).ToString("$ 0.00"))" disabled readonly>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <button @ref="btnAgregar" type="button" class="btn btn-sm btn-primary w-100" @onclick="AgregarVentaDetalle"
+                    disabled="@(ventaDetalleEdicion.Cantidad == 0 || ventaDetalleEdicion.Cantidad > producto.CantidadInventario || ventaDetalleEdicion.Precio == 0)">
+                Agregar
+            </button>
+        </div>
+
+    </div>
+
+    <ListaCompra @bind-Venta="venta" OnBorrarRenglonVentaDetalle="BorrarRenglonVentaDetalle" />
+
+   <RegionAccionesDeVentaEnFormularioVentas 
+       empresaId="empresaId"                                     
+       usuarioId="usuarioId"                                    
+       @bind-Cliente="cliente"                                    
+       @bind-Venta="venta"                                     
+       Clientes="ClientesDTOs"                                     
+       LimpiarVenta="LimpiarVenta"                                     
+       OnGuardar="GuardarVenta"/>
+}
+
+@code {
+    private bool CargandoData = new bool();
+
+    private const string _nombreClienteGenerico = "Cliente Generico";
+
+    [Parameter] public Venta venta { get; set; } = new Venta();
+
+    public string PalabraBusqueda { get; set; } = string.Empty;
+    List<string> opciones = new List<string>();
+
+    public string PalabraBusquedaClientes { get; set; } = string.Empty;
+    List<string> opcionesClientes = new List<string>();
+
+    ElementReference textClientes;
+    ElementReference textProductos;
+    ElementReference textCantidad;
+    ElementReference btnAgregar;
+
+    private long empresaId = new long();
+    private long usuarioId = new long();
+
+    private ClienteDTO cliente = new ClienteDTO();
+    private ProductoDTO producto = new ProductoDTO();
+    private VentaDetalle ventaDetalleEdicion = new VentaDetalle();
+
+    private List<ClienteDTO> ClientesDTOs = new List<ClienteDTO>();
+    private List<ProductoDTO> ProductosDTO = new List<ProductoDTO>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        CargandoData = true;
+
+        empresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+        usuarioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "AuthId").Value);
+
+        await CargarClientes();
+        await CargarProductos();
+
+        CargandoData = false;
+    }
+
+    //protected override async Task OnAfterRenderAsync(bool first)
+    //{
+    //    if (first)
+    //    {
+    //        await textProductos.FocusAsync();
+    //    }
+    //}
+
+    #region Cargar_Datos
+    protected async Task CargarClientes()
+    {
+        var respuesta = await manager.Get<List<ClienteDTO>>($"api/clientes/GetClientesDTOs/{empresaId}");
+
+        if (respuesta.Estado == EstadosDeRespuesta.Correcto)
+        {
+            ClientesDTOs = respuesta.Datos;
+
+            opcionesClientes = ClientesDTOs.Select(p => p.Nombre).Distinct().ToList();
+
+            cliente = ClientesDTOs.FirstOrDefault(x => x.Nombre == _nombreClienteGenerico);
+            PalabraBusquedaClientes = cliente.Nombre;
+        }
+        else
+        {
+            await ComprobarEstatusRespuesta(respuesta.Estado, respuesta.Mensaje);
+        }
+    }
+
+    protected async Task CargarProductos()
+    {
+        var respuesta = await manager.Get<List<ProductoDTO>>($"api/productos/GetProductosDTOs/{empresaId}");
+
+        if (respuesta.Estado == EstadosDeRespuesta.Correcto)
+        {
+            ProductosDTO = respuesta.Datos;
+
+            opciones = ProductosDTO.Select(p => p.Descripcion).Distinct().ToList();
+        }
+        else
+        {
+            await ComprobarEstatusRespuesta(respuesta.Estado, respuesta.Mensaje);
+        }
+    }
+    #endregion
+
+    protected async Task SeleccionarProductoListaProductos(long productoId)
+    {
+        producto = ProductosDTO.FirstOrDefault(p => p.Id == productoId);
+
+        PalabraBusqueda = producto.Descripcion;
+
+        ventaDetalleEdicion.DescripcionProducto = producto.Descripcion;
+        ventaDetalleEdicion.Precio = producto.PrecioVenta;
+
+        if (producto.CantidadInventario == 0)
+        {
+            ventaDetalleEdicion.Cantidad = 0;
+        }
+        else
+        {
+            ventaDetalleEdicion.Cantidad = 1;
+        }
+    }
+
+    protected async Task SeleccionarClienteListaClientes(long clienteId)
+    {
+        cliente = ClientesDTOs.FirstOrDefault(p => p.Id == clienteId);
+        PalabraBusquedaClientes = cliente.Nombre;
+    }
+
+    #region Operaciones_FormularioVenta_ListaCompra
+    protected void ColocarClienteEdicion()
+    {
+        if (PalabraBusquedaClientes == "")
+        {
+            return;
+        }
+        else if (ClientesDTOs.Exists(p => p.Nombre == PalabraBusquedaClientes) == false)
+        {
+            return;
+        }
+        else
+        {
+            cliente = ClientesDTOs.FirstOrDefault(p => p.Nombre == PalabraBusquedaClientes);
+        }
+    }
+
+    protected void ColocarProductoEdicion()
+    {
+        PalabraBusqueda.Trim();
+
+        if (PalabraBusqueda == "")
+        {
+            return;
+        }
+        else if (ProductosDTO.Exists(p => p.Descripcion == PalabraBusqueda || p.CodigoBarras == PalabraBusqueda) == false)
+        {
+            return;
+        }
+        else if (ProductosDTO.Exists(p => p.Descripcion == PalabraBusqueda || p.CodigoBarras == PalabraBusqueda.Trim()) == true)
+        {
+            producto = ProductosDTO.FirstOrDefault(p => p.Descripcion == PalabraBusqueda || p.CodigoBarras == PalabraBusqueda);
+
+            ventaDetalleEdicion.DescripcionProducto = producto.Descripcion;
+            ventaDetalleEdicion.Precio = producto.PrecioVenta;
+
+            if (producto.CantidadInventario == 0)
+            {
+                ventaDetalleEdicion.Cantidad = 0;
+            }
+            else
+            {
+                ventaDetalleEdicion.Cantidad = 1;
+            }
+        }
+    }
+
+    private async Task AgregarVentaDetalle()
+    {
+        var tarea = Task.Run(() =>
+        {
+            ventaDetalleEdicion.ProductoId = producto.Id;
+
+            if (venta.VentaDetalles.Exists(x => x.DescripcionProducto == ventaDetalleEdicion.DescripcionProducto))
+            {
+                venta.VentaDetalles.First(x => x.DescripcionProducto == ventaDetalleEdicion.DescripcionProducto).Cantidad += ventaDetalleEdicion.Cantidad;
+            }
+            else
+            {
+                venta.VentaDetalles.Add(ventaDetalleEdicion);
+            }
+
+            venta.Subtotal = 0;
+            venta.VentaDetalles.ForEach(vd => venta.Subtotal += vd.Total);
+            venta.Total = venta.Subtotal;
+
+            ProductosDTO.First(x => x.Id == producto.Id).CantidadInventario -= ventaDetalleEdicion.Cantidad;
+
+            producto = new ProductoDTO();
+            ventaDetalleEdicion = new VentaDetalle();
+            PalabraBusqueda = string.Empty;
+        });
+
+        await tarea;
+    }
+    
+    private async Task BorrarRenglonVentaDetalle(VentaDetalle value)
+    {
+        ProductosDTO.First(x => x.Id == value.ProductoId).CantidadInventario += value.Cantidad;
+    }
+    #endregion
+
+    private async Task GuardarVenta(Respuesta<long> respuesta)
+    {
+        if (respuesta.Estado == EstadosDeRespuesta.Correcto)
+        {
+
+            await CargarProductos();
+
+            var tarea = Task.Run(() =>
+            {
+                venta = new Venta() { VentaDetalles = new List<VentaDetalle>() };
+                producto = new ProductoDTO();
+                ventaDetalleEdicion = new VentaDetalle();
+                PalabraBusqueda = string.Empty;
+
+                cliente = ClientesDTOs.FirstOrDefault(x => x.Nombre == _nombreClienteGenerico);
+                PalabraBusquedaClientes = cliente.Nombre;
+            });
+
+            await tarea;
+
+            await mostrarMensajes.MostrarMensajeExitoso(respuesta.Mensaje);
+        }
+        else
+        {
+            await ComprobarEstatusRespuesta(respuesta.Estado, respuesta.Mensaje);
+        }
+    }
+    
+    private async Task LimpiarVenta()
+    {
+        var tarea = Task.Run(() =>
+        {
+            PalabraBusqueda = string.Empty;
+            producto = new ProductoDTO();
+            ventaDetalleEdicion = new VentaDetalle();
+
+            venta.VentaDetalles = new List<VentaDetalle>();
+        });
+
+        await CargarProductos();
+
+        await tarea;
+    }
+
+    private async Task ComprobarEstatusRespuesta(EstadosDeRespuesta estadoRespuesta, string mensajeRespuesta)
+    {
+        if (estadoRespuesta == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(mensajeRespuesta);
+        }
+        else if (estadoRespuesta == EstadosDeRespuesta.NoProceso)
+        {
+            await mostrarMensajes.MostrarMensajeError("Peticion No Procesada");
+        }
+    }
+
+}

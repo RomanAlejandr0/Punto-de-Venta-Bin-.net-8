@@ -1,0 +1,91 @@
+﻿<button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal"
+        data-bs-target="#ModalListaClientes" @onclick="(() => { PalabraBusquedaClientes = string.Empty; })">
+    <i class="bi bi-search"></i>
+</button>
+
+<!-- Modal de Lista de Clientes -->
+<div class="modal fade" id="ModalListaClientes" tabindex="-1" aria-labelledby="ModalListaClientesLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="ModalListaClientesLabel">Lista de Clientes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body">
+
+                <div class="row position-sticky top-0" style="z-index: 10;">
+                    <div class="col-12">
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control" @bind="PalabraBusquedaClientes" @bind:event="oninput"
+                                   id="InputClientes" placeholder="Escribe para buscar..." />
+
+                            <button class="btn btn-outline-secondary" type="button"
+                                    @onclick="(() => { PalabraBusquedaClientes = string.Empty; Clientes = ClientesListaCompleta; })">
+                                Limpiar
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="position-sticky mt-3">
+                    <table class="table table-primary table-hover text-center mb-0 align-middle position-sticky">
+                        <thead>
+                            <tr class="text-center align-middle">
+                                <th scope="col" style="width: 35%;">Producto</th>
+                                <th scope="col" style="width: 15%;"></th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+
+                <div style="overflow-y: scroll; height: 480px;">
+                    <table class="table table-hover text-center mb-0 align-middle">
+                        <tbody>
+                            @foreach (var cliente in Clientes.
+                            Where(p => p.Nombre.ToUpper().Contains(PalabraBusquedaClientes.ToUpper())))
+                            {
+                                <tr class="text-center align-middle">
+                                    <td scope="row" class="text-start">@cliente.Nombre</td>
+                                    <td>
+                                        <button class="btn bt-sm btn-outline-primary" 
+                                                @onclick="(() => SeleccionarProductoListaClientes(cliente.Id))" 
+                                                data-bs-dismiss="modal">
+                                            <i class="bi bi-arrow-right-circle-fill"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public List<ClienteDTO> Clientes { get; set; }
+
+    [Parameter] public List<ClienteDTO> ClientesListaCompleta { get; set; }
+
+    [Parameter] public EventCallback<long> OnSeleccionarCliente { get; set; }
+
+    public string PalabraBusquedaClientes { get; set; } = string.Empty;
+
+
+    protected async Task SeleccionarProductoListaClientes(long clienteId)
+    {
+        //CERRAR MODAL
+
+        Clientes = ClientesListaCompleta;
+
+        PalabraBusquedaClientes = string.Empty;
+
+        await OnSeleccionarCliente.InvokeAsync(clienteId);
+    }
+
+}

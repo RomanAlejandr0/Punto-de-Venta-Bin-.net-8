@@ -1,0 +1,67 @@
+﻿@inject ILoginService loginService
+@inject NavigationManager navigate
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">PuntoVentaBin</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="ventas" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Ventas
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="productos">
+                <span class="oi oi-plus" aria-hidden="true"></span> Inventario
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="clientes">
+                <span class="oi oi-people" aria-hidden="true"></span> Clientes
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="usuarios">
+                <span class="oi oi-people" aria-hidden="true"></span> Usuarios
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="provedores">
+                <span class="oi oi-people" aria-hidden="true"></span> Proveedores
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="historial">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Historial Ventas
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <button class="btn btn-sm btn-warning w-100" @onclick="Logout">Salir</button>
+        </div>
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    private async Task Logout()
+    {
+        await loginService.Logout();
+        var Tarea = Task.Run(() => navigate.NavigateTo("/"));
+        await Tarea;
+    }
+}

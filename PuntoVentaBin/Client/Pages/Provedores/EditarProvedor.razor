@@ -1,0 +1,60 @@
+﻿@page "/provedores/editar/{ProvedorId:long}"
+@inject IManager manager
+@inject NavigationManager navigationManager
+@inject IMostrarMensajes mostrarMensajes
+@inject IJSRuntime js
+@attribute [Authorize]
+
+<h3>Editar Provedor</h3>
+
+@if (provedor == null)
+{
+	<p>Cargando...</p>
+}
+else
+{
+	<FormularioProvedores provedor="provedor" OnValidSubmit="Editar" Procesando="procesando"/>
+}
+
+@code {
+	private Provedor provedor;
+	private bool procesando = false;
+	[Parameter] public long ProvedorId { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		var respuesta = await manager.Get<Provedor>($"api/provedores/{ProvedorId}");
+
+		if (respuesta.Estado == EstadosDeRespuesta.Error)
+		{
+			await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+		}
+		else
+		{
+			provedor = respuesta.Datos;
+		}
+	}
+
+	private async Task Editar()
+	{
+		procesando = true;
+
+		bool confirmed = await js.Confirm("¿Guardar cambios?");
+
+		if (confirmed)
+		{
+			var respuesta = await manager.Post<Provedor, long>("api/provedores/EditarProvedor", provedor);
+
+			if (respuesta.Estado == EstadosDeRespuesta.Error)
+			{
+				await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+			}
+			else
+			{
+				navigationManager.NavigateTo("/provedores");
+			}
+		}
+
+		procesando = false;
+	}
+}

@@ -1,0 +1,47 @@
+﻿@inject NavigationManager navigationManager
+
+<h3>Formulario de Provedores</h3>
+
+<EditForm Model="provedor" OnValidSubmit="OnValidSubmit">
+    <div class="row mb-2">
+        <div class="col-12 col-md-6">
+            <label >Nombre del Cliente</label>
+            <InputText class="form-control" @bind-Value="provedor.Nombre" />
+        </div>
+        <div class="col-12 col-md-6 mb-2">
+            <label >Empresa</label>
+            <InputText class="form-control" @bind-Value="provedor.Empresa" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-6 mb-2">
+            <label class="col-form-label">Telefono Negocio</label>
+            <InputText class="form-control" @bind-Value="provedor.TelefonoNegocio" />
+        </div>
+        <div class="col-6">
+            <label class="col-form-label">Telefono celular</label>
+            <InputText class="form-control" @bind-Value="provedor.TelefonoCelular" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 col-sm-auto">
+            <button type="submit" class="btn btn-lg btn-primary"> Guardar Cambios</button>
+        </div>
+        <div class="col-12 col-sm-auto">
+            <button class="btn btn-lg btn-warning" @onclick="Cancelar">Cancelar</button>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+	[Parameter] public Provedor provedor { get; set; }
+    [Parameter] public bool Procesando { get; set; }
+	[Parameter] public EventCallback OnValidSubmit { get; set; }
+
+	private void Cancelar()
+	{
+		navigationManager.NavigateTo("/provedores");
+	}
+}

@@ -1,0 +1,261 @@
+﻿@page "/productos"
+
+@inject IManager manager
+@inject IJSRuntime js
+@inject IMostrarMensajes mostrarMensajes
+@inject AuthenticationStateProvider auth
+
+@attribute [Authorize]
+
+<PageTitle>Productos</PageTitle>
+
+<h5 class="border-start border-2 ps-1">Inventario</h5>
+<p>Aquí podran crear, editar y eliminar productos.</p>
+
+
+<div class="row g-2 mt-4">
+
+    <div class="col-6">
+        <div class="input-group">
+            <input type="text" class="form-control" list="opciones" @bind="PalabraBusqueda" @bind:event="oninput"
+                   id="DatalistProductos" placeholder="Escribe para buscar..." />
+            <datalist id="opciones">
+                @foreach (var item in opciones)
+                {
+                    if (item.ToUpper().Contains(PalabraBusqueda.ToUpper()) && item.ToUpper().StartsWith(PalabraBusqueda.ToUpper()) && PalabraBusqueda.Length > 1)
+                    {
+                        <option value="@item" />
+                    }
+                }
+            </datalist>
+
+            <button class="btn btn-outline-secondary" type="button"
+                    @onclick="(() => { PalabraBusqueda = string.Empty; Productos = new List<Producto>();})">
+                Limpiar
+            </button>
+
+            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                Categorias
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                @foreach (var item in CategoriasProductos)
+                {
+                    <li class="dropdown-item" @onclick="(() => SeleccionarCategoria(item))">@item.Nombre</li>
+                }
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" @onclick="(() => { Productos = ProductosListaCompleta.Where(x => x.Categoria == null || x.Categoria == string.Empty).ToList(); })">Sin categoria</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-3">
+        <div class="btn-group w-100" role="group" aria-label="Button group with nested dropdown">
+            <a class="btn btn-outline-primary" href="/productos/crear">Nuevo Producto</a>
+        </div>
+    </div>
+
+    <div class="col-3">
+        <div>
+            <a class="btn btn-outline-warning w-100" href="/productos/configuraciones">
+                Administrar Categorias <i class="bi bi-gear"></i>
+            </a>
+        </div>
+    </div>
+
+</div>
+
+<ListadoGenerico Listado="Productos">
+    <HayRegistros>
+        <div class="table-responsive py-3">
+            <table class="table table-sm table-bordered table-hover align-middle shadow-sm">
+                <thead>
+                    <tr class="table-success text-center">
+                        <th scope="col">
+                            <p class="mx-2 d-inline">Descripcion</p>
+                            <span class="badge rounded-pill bg-primary border btn" @onclick="OrdenarProductosPorDescripcion">
+                                <i class="bi bi-arrow-down-up"></i>
+                            </span>
+                        </th>
+                        <th scope="col">
+                            <p class="mx-2 d-inline">Inventario</p>
+                            <span class="badge rounded-pill bg-primary border btn" @onclick="OrdenarProductosPorCantidad">
+                                <i class="bi bi-arrow-down-up"></i>
+                            </span>
+                        </th>
+                        <th scope="col">Precio Compra</th>
+                        <th scope="col">Precio Venta</th>
+                        <th scope="col">Categoria</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var producto in Productos)
+                    {
+                        <tr class="bg-white text-center align-middle">
+                            <td scope="row" class="text-start px-3">@producto.Descripcion</td>
+                            <td>@producto.CantidadInventario</td>
+                            <td>@producto.PrecioCompra.ToString("$0.00")</td>
+                            <td>@producto.PrecioVenta.ToString("$0.00")</td>
+                            <td>@producto.Categoria</td>
+                            <td class="align-items-center">
+                                <div class="row g-1 row-cols-md-2">
+                                    <div class="col-auto">
+                                        <a class="btn btn-sm btn-outline-warning" href="/productos/editar/@producto.Id" title="Editar Producto">
+                                            <i class="bi bi-gear-fill"></i>
+                                        </a>
+                                    </div>
+                                    <div class="col-auto">
+                                        <button class="btn btn-sm btn-outline-danger" @onclick="(() => BorrarProducto(producto))" title="Borrar Producto">
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </HayRegistros>
+</ListadoGenerico>
+
+
+@code {
+    public long empresaId = new long();
+
+    public string _palabraBusqueda { get; set; } = string.Empty;
+    public string PalabraBusqueda
+    {
+        get { return _palabraBusqueda; }
+        set
+        {
+           _palabraBusqueda = value;
+
+            if (!string.IsNullOrEmpty(_palabraBusqueda))
+            {
+                _palabraBusqueda.TrimStart();
+                _palabraBusqueda.TrimEnd();
+
+                if (ProductosListaCompleta.Any(x => x.Descripcion.StartsWith(_palabraBusqueda)) || ProductosListaCompleta.Any(x => x.CodigoBarras == _palabraBusqueda))
+                {
+                    Productos = ProductosListaCompleta.Where(x => x.Descripcion.ToLower() == PalabraBusqueda.ToLower()).ToList();
+                }
+            }
+        }
+    }
+
+    List<string> opciones = new List<string>();
+
+    private bool ordenadosPorNombreAscendente = true;/*A-Z*/
+    private bool ordenadosPorCantidadAscendente = true;/*0-1*/
+
+    public Categoria categoria = new Categoria();
+
+    public List<Producto> Productos = new List<Producto>();
+    public List<Producto> ProductosListaCompleta { get; set; }
+    public List<Categoria> CategoriasProductos = new List<Categoria>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        empresaId = long.Parse((await auth.GetAuthenticationStateAsync()).
+            User.Claims.First(c => c.Type == "EmpresaId").Value);
+
+        await CargarProductos();
+        await CargarCategorias();
+    }
+
+    protected async Task CargarProductos()
+    {
+        var respuesta = await manager.Get<List<Producto>>($"api/productos/GetAll/{empresaId}");
+
+        if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            ProductosListaCompleta = respuesta.Datos;
+            opciones = ProductosListaCompleta.Select(p => p.Descripcion).Distinct().ToList();
+        }
+    }
+
+    protected async Task CargarCategorias()
+    {
+        var respuesta = await manager.Get<List<Categoria>>($"Categorias/GetAll/{empresaId}");
+
+        if (respuesta.Estado == EstadosDeRespuesta.Correcto)
+        {
+            CategoriasProductos = respuesta.Datos;
+        }
+        else
+        {
+            await ComprobarEstatusRespuesta(respuesta.Estado, respuesta.Mensaje);
+        }
+    }
+
+    private async Task BorrarProducto(Producto producto)
+    {
+        bool confirmed = await js.Confirm("¿Eliminar el producto?");
+
+        if (confirmed)
+        {
+            var respuesta = await manager.Post<Producto, long>($"api/productos/EliminarProducto", producto);
+
+            if (respuesta.Estado == EstadosDeRespuesta.Correcto)
+            {
+                Productos.Remove(producto);
+                await mostrarMensajes.MostrarMensajeExitoso(respuesta.Mensaje);
+            }
+            else
+            {
+                await ComprobarEstatusRespuesta(respuesta.Estado, respuesta.Mensaje);
+            }
+        }
+    }
+
+    private async Task ComprobarEstatusRespuesta(EstadosDeRespuesta estadoRespuesta, string mensajeRespuesta)
+    {
+        if (estadoRespuesta == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(mensajeRespuesta);
+        }
+        else if (estadoRespuesta == EstadosDeRespuesta.NoProceso)
+        {
+            await mostrarMensajes.MostrarMensajeError("Peticion No Procesada");
+        }
+    }
+
+    private void OrdenarProductosPorDescripcion()
+    {
+        ordenadosPorNombreAscendente = !ordenadosPorNombreAscendente;
+
+        if (ordenadosPorNombreAscendente)
+        {
+            Productos = Productos.OrderBy(p => p.Descripcion).ToList();
+        }
+        else
+        {
+            Productos = Productos.OrderByDescending(p => p.Descripcion).ToList();
+        }
+    }
+
+    private void OrdenarProductosPorCantidad()
+    {
+        ordenadosPorCantidadAscendente = !ordenadosPorCantidadAscendente;
+
+        if (ordenadosPorCantidadAscendente)
+        {
+            Productos = Productos.OrderBy(p => p.CantidadInventario).ToList();
+
+        }
+        else
+        {
+            Productos = Productos.OrderByDescending(p => p.CantidadInventario).ToList();
+        }
+    }
+
+    public void SeleccionarCategoria(Categoria categoria)
+    {
+        Productos = ProductosListaCompleta.Where(x => x.Categoria == categoria.Nombre).ToList();
+    }
+}

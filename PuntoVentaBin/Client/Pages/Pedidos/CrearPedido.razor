@@ -1,0 +1,59 @@
+﻿@page "/pedidos/crear"
+@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+@inject NavigationManager navigationManager
+@inject AuthenticationStateProvider auth
+
+@attribute [Authorize]
+
+
+<PageTitle>Ventas</PageTitle>
+
+<h5 class="border-start border-2 ps-1 mb-3">Nuevo Pedido</h5>
+
+<FormularioVentas venta="pedido" EsPedido="true" />
+
+@code {
+    private Venta pedido = new Venta() { VentaDetalles = new List<VentaDetalle>(), FechaHoraVenta = DateTime.Now, EsPedido = true };
+
+    private List<Venta> VentasEnEspera = new List<Venta>();
+
+	private async Task Crear()
+	{
+		pedido.EmpresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+        //venta.ClienteId = cliente.Id;
+
+        var respuesta = await manager.Post<Venta, long>("api/pedidos/GuardarPedido", pedido);
+
+		if(respuesta.Estado == EstadosDeRespuesta.Error)
+		{
+			await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+		}
+		else
+		{
+			navigationManager.NavigateTo("/pedidos");
+			await mostrarMensajes.MostrarMensajeExitoso(respuesta.Mensaje);
+		}
+	}
+
+    //private async Task GuardarPedido()
+    //{
+    //    pedido.EmpresaId = EmpresaId;
+    //    pedido.FechaHoraVenta = DateTime.Now;
+    //    pedido.ClienteId = cliente.Id;
+    //    pedido.Total = pedido.Total - pedido.DescuentoTotal;
+
+    //    var respuesta = await manager.Post<Pedido, long>("api/pedidos/GuardarPedido", pedido);
+
+    //    if (respuesta.Estado == EstadosDeRespuesta.Error)
+    //    {
+    //        await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+    //    }
+    //    else
+    //    {
+    //        pedido = new Pedido() { PedidoDetalles = new List<PedidoDetalle>() };
+    //        await mostrarMensajes.MostrarMensajeExitoso(respuesta.Mensaje);
+    //    }
+    //}
+
+}

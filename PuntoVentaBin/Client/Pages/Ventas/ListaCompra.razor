@@ -1,0 +1,85 @@
+﻿<div class="mt-4 container-fluid border rounded-start shadow-sm" style="height: 52vh; overflow: scroll;">
+    <div class="table-responsive py-3">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Producto</th>
+                    <th scope="col">Cantidad</th>
+                    <th scope="col">Precio unitario</th>
+                    <th scope="col">Subtotal</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ventaDetalle in Venta.VentaDetalles)
+                {
+                    <tr>
+                        <td scope="row">@($"{Venta.VentaDetalles.IndexOf(ventaDetalle) + 1}.")</td>
+                        <td class="text-start">@ventaDetalle.DescripcionProducto</td>
+                        <td>@ventaDetalle.Cantidad</td>
+                        <td>@ventaDetalle.Precio.ToString("$ 0.00")</td>
+                        <td>@ventaDetalle.Total.ToString("$ 0.00")</td>
+                        @if (EstaEditandoListaCompra)
+                        {
+                            <td>
+                                <button class="btn btn-sm btn-outline-danger" @onclick="(() => BorrarRenglonVentaDetalle(ventaDetalle))" title="Borrar Producto">
+                                    <i class="bi bi-trash3-fill"></i>
+                                </button>
+                            </td>
+                        }
+                        else
+                        {
+                            <td></td>
+                        }
+                    </tr>
+                }
+            </tbody>
+            <tfoot class="table-light">
+                <tr>
+                    <th scope="row" class="text-end" colspan="4">Total</th>
+                    <td>@Venta.Total.ToString("$ 0.00")</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+
+@code {
+    [Parameter] public bool EstaEditandoListaCompra { get; set; } = true;
+
+    [Parameter] public EventCallback<VentaDetalle> OnBorrarRenglonVentaDetalle { get; set; }
+
+    private Venta _venta;
+    [Parameter]
+    public Venta Venta
+    {
+        get
+        {
+            return _venta;
+        }
+        set
+        {
+            if (_venta != value)
+            {
+                _venta = value;
+                if (VentaChanged.HasDelegate)
+                {
+                    VentaChanged.InvokeAsync(value);
+                }
+            }
+        }
+    }
+    [Parameter]
+    public EventCallback<Venta> VentaChanged { get; set; }
+
+    private async Task BorrarRenglonVentaDetalle(VentaDetalle ventaDetalle)
+    {
+        Venta.VentaDetalles.Remove(ventaDetalle);
+
+        await OnBorrarRenglonVentaDetalle.InvokeAsync(ventaDetalle);
+        Venta.Total -= ventaDetalle.Total;
+    }
+}

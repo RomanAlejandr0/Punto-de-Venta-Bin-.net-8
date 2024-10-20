@@ -1,0 +1,322 @@
+﻿@page "/registro"
+@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+@inject NavigationManager navigate
+@inject AuthenticationStateProvider auth
+
+
+
+<style>
+    html,
+    body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .back-button {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1000;
+        color: #007bff;
+        background: transparent;
+        border: none;
+    }
+
+        .back-button:hover {
+            color: #0056b3;
+            text-decoration: none;
+        }
+
+    .form-register {
+        width: 100%;
+        max-width: 500px;
+        padding: 2rem;
+        margin: auto;
+        background-color: #ffffff;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+        .form-register img {
+            width: 120px;
+        }
+
+        .form-register h4 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #333333;
+            text-align: center;
+        }
+
+    .input-group-text {
+        background-color: #f8f9fa;
+        border: none;
+    }
+
+    .form-control {
+        border-radius: 0.25rem;
+        border: 1px solid #ced4da;
+    }
+
+        .form-control:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+        transition: background-color 0.3s, border-color 0.3s;
+    }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+    .btn-outline-primary {
+        border-color: #007bff;
+        color: #007bff;
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+        .btn-outline-primary:hover {
+            background-color: #0056b3;
+            color: #ffffff;
+        }
+
+    .password-validation {
+        margin-top: 1rem;
+    }
+
+        .password-validation .list-group-item {
+            padding: 0.5rem 1rem;
+            border: none;
+            background-color: transparent;
+        }
+
+        .password-validation .bi-check-circle-fill {
+            color: #28a745;
+        }
+
+        .password-validation .bi-x-circle-fill {
+            color: #dc3545;
+        }
+
+    .alert-info {
+        font-size: 0.9rem;
+    }
+
+    @@media (max-width: 576px) {
+        .form-register {
+            padding: 1rem;
+        }
+    }
+</style>
+
+<!-- Botón de regreso -->
+<button class="back-button" @onclick="Regresar" aria-label="Regresar">
+    <i class="bi bi-arrow-left" style="font-size: 1.5rem;"></i>
+</button>
+
+<div class="d-flex align-items-center justify-content-center vh-100">
+    <main class="form-register">
+        <EditForm Model="usuario" OnValidSubmit="EnviarRegistroUsuario">
+
+            <h4>Datos del Usuario</h4>
+
+            <div class="input-group input-group-lg mb-3">
+                <span class="input-group-text">
+                    <i class="bi bi-file-person" style="font-size: 1.2rem;"></i>
+                </span>
+                <InputText type="text" class="form-control" placeholder="Nombre Completo" @bind-Value="usuario.Nombre" />
+            </div>
+            <ValidationMessage For="(() => usuario.Nombre)" />
+
+            <div class="input-group input-group-lg mb-3">
+                <span class="input-group-text">
+                    <i class="bi bi-envelope" style="font-size: 1.2rem;"></i>
+                </span>
+                <InputText type="email" class="form-control" placeholder="Email" @bind-Value="usuario.Email" />
+            </div>
+            <ValidationMessage For="(() => usuario.Email)" />
+
+            <div class="input-group input-group-lg mb-3">
+                <span class="input-group-text">
+                    <i class="bi bi-lock" style="font-size: 1.2rem;"></i>
+                </span>
+                <InputText type="password"
+                           class="@($"form-control {(IsPasswordValid ? "is-valid" : "is-invalid")}")"
+                           @bind-Value="usuario.Password"
+                           @oninput="ValidatePassword"
+                           placeholder="Contraseña" />
+            </div>
+            <ValidationMessage For="() => usuario.Password" />
+
+            <div class="password-validation">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        @if (IsLengthValid)
+                        {
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                        }
+                        else
+                        {
+                            <i class="bi bi-x-circle-fill me-2"></i>
+                        }
+                        <strong>Longitud:</strong> Entre <strong>8 y 10 caracteres</strong>.
+                    </li>
+                    <li class="list-group-item">
+                        @if (HasUpperCase)
+                        {
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                        }
+                        else
+                        {
+                            <i class="bi bi-x-circle-fill me-2"></i>
+                        }
+                        <strong>Mayúsculas:</strong> Al menos una letra mayúscula.
+                    </li>
+                    <li class="list-group-item">
+                        @if (HasLowerCase)
+                        {
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                        }
+                        else
+                        {
+                            <i class="bi bi-x-circle-fill me-2"></i>
+                        }
+                        <strong>Minúsculas:</strong> Al menos una letra minúscula.
+                    </li>
+                    <li class="list-group-item">
+                        @if (HasNumber)
+                        {
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                        }
+                        else
+                        {
+                            <i class="bi bi-x-circle-fill me-2"></i>
+                        }
+                        <strong>Números:</strong> Al menos un dígito.
+                    </li>
+                </ul>
+            </div>
+
+            <div class="row justify-content-end mt-4">
+                <!-- Botón de Registrarse -->
+                <div class="col-12 mb-3">
+                    <button type="submit" class="btn btn-primary w-100 btn-lg" @onclick="(() => EnviarRegistroUsuario())" disabled="@(procesando == true)">
+                        <i class="bi bi-person-plus me-2"></i> Registrarse
+                    </button>
+                </div>
+
+                <!-- Enlace de Login debajo del botón de Registrarse -->
+                <div class="col-12 text-center">
+                    <NavLink class="text-decoration-none" href="/login">
+                        <small class="text-muted">
+                            <i class="bi bi-box-arrow-in-left me-2"></i> ¿Ya tienes una cuenta? <strong>Iniciar sesión</strong>
+                        </small>
+                    </NavLink>
+                </div>
+            </div>
+
+            @if (procesando == true)
+            {
+                <div class="text-center mt-3">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-2">@cargando</p>
+                </div>
+            }
+        </EditForm>
+
+        @if (!string.IsNullOrEmpty(mensajeRegistro))
+        {
+            <div class="alert alert-info mt-3 text-center" role="alert">
+                @mensajeRegistro
+            </div>
+        }
+    </main>
+</div>
+
+
+@code {
+    private bool procesando = false;
+    private UsuarioBin usuario = new UsuarioBin();
+    private string cargando = "Cargando...";
+
+    private string mensajeRegistro;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await auth.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            navigate.NavigateTo("/mis-negocios");
+        }
+    }
+
+    private async Task EnviarRegistroUsuario()
+    {
+        procesando = true;
+
+        var respuesta = await manager.Post<UsuarioBin, long>("api/registro/RealizarRegistroUsuario", usuario);
+
+        if (respuesta.Estado == EstadosDeRespuesta.Correcto)
+        {
+            if (respuesta.Datos == 0)
+            {
+                mensajeRegistro = respuesta.Mensaje;
+                await mostrarMensajes.MostrarMensajeInformacion(mensajeRegistro);
+            }
+            else
+            {
+                mensajeRegistro = "Registro exitoso. Por favor, verifica tu correo electrónico para activar tu cuenta.";
+                await mostrarMensajes.MostrarMensajeExitoso(mensajeRegistro);
+                usuario = new UsuarioBin();
+                navigate.NavigateTo("/login");
+            }
+        }
+        else if (respuesta.Estado == EstadosDeRespuesta.NoProceso)
+        {
+            Console.WriteLine("Peticion no procesada");
+            await mostrarMensajes.MostrarMensajeError("Peticion no procesada");
+        }
+        else if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            Console.WriteLine(respuesta.Mensaje);
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+
+
+        procesando = false;
+    }
+
+
+    private void Regresar()
+    {
+        navigate.NavigateTo("/");
+    }
+
+
+    private bool IsLengthValid => !string.IsNullOrEmpty(usuario.Password) && usuario.Password.Length >= 8 && usuario.Password.Length <= 10;
+    private bool HasUpperCase => !string.IsNullOrEmpty(usuario.Password) && usuario.Password.Any(char.IsUpper);
+    private bool HasLowerCase => !string.IsNullOrEmpty(usuario.Password) && usuario.Password.Any(char.IsLower);
+    private bool HasNumber => !string.IsNullOrEmpty(usuario.Password) && usuario.Password.Any(char.IsDigit);
+    private bool IsPasswordValid => IsLengthValid && HasUpperCase && HasLowerCase && HasNumber;
+
+    private void ValidatePassword(ChangeEventArgs e)
+    {
+        //     Este método se invoca en cada entrada del usuario.
+        //     Las propiedades calculadas se actualizarán automáticamente.
+        //     Puedes forzar una actualización del estado si es necesario.
+        StateHasChanged();
+    }
+}

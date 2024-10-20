@@ -1,0 +1,58 @@
+﻿@page "/productos/crear"
+
+@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+@inject NavigationManager navigationManager
+@inject AuthenticationStateProvider auth
+@inject IJSRuntime js
+
+@attribute [Authorize]
+
+<h5 class="border-start border-2 ps-1 mb-3">Nuevo Producto</h5>
+
+<FormularioProductos Producto="producto" OnValidSubmit="Crear" Procesando="procesando" />
+
+@code {
+    private Producto producto = new Producto() { Presentacion = "Unidad" };
+    private bool procesando = false;
+
+
+    private async Task Crear()
+    {
+        procesando = true;
+
+        bool confirmed = await js.Confirm("¿Guardar producto?");
+
+        if (confirmed)
+        {
+
+            producto.EmpresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+
+            if (string.IsNullOrEmpty(producto.Descripcion))
+            {
+                await mostrarMensajes.MostrarMensajeError("La descripción del producto no puede estar vacía.");
+                procesando = false;
+                return;
+            }
+
+            if (producto.CodigoBarras != null && producto.CodigoBarras != string.Empty)
+            {
+                producto.CodigoBarras.Trim();
+            }
+
+            var respuesta = await manager.Post<Producto, long>("api/productos/CrearProducto", producto);
+
+            if (respuesta.Estado == EstadosDeRespuesta.Error)
+            {
+                await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+            }
+            else
+            {
+                navigationManager.NavigateTo("/productos");
+            }
+
+        }
+
+        procesando = false;
+    }
+}

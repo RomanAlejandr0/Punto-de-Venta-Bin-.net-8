@@ -1,0 +1,164 @@
+﻿@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+@inject IJSRuntime js
+
+@*#region Botones: Cobrar, Limpiar Venta y Venta en Espera*@
+<div class="row g-1 mt-3">
+    <div id="Cobrar" class="col-md-6 offset-6">
+        <button type="button" class="btn btn-sm btn-primary w-100" @onclick="AbrirModalCobro" data-bs-toggle="modal" data-bs-target="#modalCobro" disabled="@(Venta.VentaDetalles.Count == 0)">
+            Cobrar
+        </button>
+    </div>
+
+    <div id="LimpiarVenta" class="col-md-6 offset-6">
+        <button class="btn btn-sm btn-outline-danger w-100" @onclick="LimpiarVenta" disabled="@(Venta.VentaDetalles.Count == 0)">Limpiar venta</button>
+    </div>
+
+</div>
+
+<!-- Modal Cobro Venta-->
+<div class="modal fade" id="modalCobro" tabindex="-1" aria-labelledby="modalCobroLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCobroLabel">Cobro - Cliente: @Cliente.Nombre</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-1">
+                    <div class="col-3">
+                        <div class="input-group">
+                            <span class="input-group-text">Total:</span>
+                            <input type="number" class="form-control bg-white" placeholder="0" aria-label="Total"
+                                   value="@Venta.Total" disabled readonly>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="input-group">
+                            <span class="input-group-text">Pago:</span>
+                            <input type="number" class="form-control bg-white" placeholder="0" aria-label="Pago"
+                                   @bind="@pago" @bind:event="oninput">
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="input-group">
+                            <span class="input-group-text">Cambio:</span>
+                            <input type="number" class="form-control bg-white" placeholder="0" aria-label="Cambio"
+                                   value="@(CalcularCambio())" disabled readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <ListaCompra Venta="Venta" EstaEditandoListaCompra="false" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @onclick="(() => GuardarVenta())">Guardar Venta</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private const string _nombreClienteGenerico = "Cliente Generico";
+    private decimal pago = 0M;
+
+    [Parameter] public long empresaId { get; set; }
+
+    [Parameter] public long usuarioId { get; set; }
+
+    [Parameter] public List<ClienteDTO> Clientes { get; set; }
+
+    [Parameter] public EventCallback LimpiarVenta { get; set; }
+
+    [Parameter] public EventCallback<Respuesta<long>> OnGuardar { get; set; }
+
+    private Venta _venta;
+    [Parameter]
+    public Venta Venta
+    {
+        get
+        {
+            return _venta;
+        }
+        set
+        {
+            if (_venta != value)
+            {
+                _venta = value;
+                if (VentaChanged.HasDelegate)
+                {
+                    VentaChanged.InvokeAsync(value);
+                }
+            }
+        }
+    }
+    [Parameter]
+    public EventCallback<Venta> VentaChanged { get; set; }
+
+    private ClienteDTO _cliente;
+    [Parameter]
+    public ClienteDTO Cliente
+    {
+        get
+        {
+            return _cliente;
+        }
+        set
+        {
+            if (_cliente != value)
+            {
+                _cliente = value;
+                if (ClienteChanged.HasDelegate)
+                {
+                    ClienteChanged.InvokeAsync(value);
+                }
+            }
+        }
+    }
+    [Parameter]
+    public EventCallback<ClienteDTO> ClienteChanged { get; set; }
+
+    private async Task GuardarVenta()
+    {
+        if (Cliente.Id == 0)
+        {
+            Cliente = Clientes.First(x => x.Nombre == _nombreClienteGenerico);
+        }
+
+        Venta.EmpresaId = empresaId;
+        Venta.UsuarioId = usuarioId;
+        Venta.FechaHoraVenta = DateTime.Now;
+        Venta.ClienteId = Cliente.Id;
+
+        var respuesta = await manager.Post<Venta, long>("api/ventas/GuardarVenta", Venta);
+
+        await OnGuardar.InvokeAsync(respuesta);
+    }
+
+    private async Task AbrirModalCobro()
+    {
+        if (Cliente.Id == 0)
+        {
+            Cliente = Clientes.First(x => x.Nombre == _nombreClienteGenerico);
+        }
+    }
+
+    private decimal CalcularCambio()
+    {
+        if (pago == 0)
+        {
+            return 0;
+        }
+        else if(pago < Venta.Total)
+        {
+            return 0;
+        }
+        else
+        {
+            return pago - Venta.Total;
+        }
+
+        return 0;
+    }
+}

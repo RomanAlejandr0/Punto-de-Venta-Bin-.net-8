@@ -1,0 +1,43 @@
+﻿@page "/clientes/crear"
+@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+@inject NavigationManager navigationManager
+@inject AuthenticationStateProvider auth
+@inject IJSRuntime js
+@attribute [Authorize]
+
+
+<h3>CrearCliente</h3>
+
+<FormularioClientes cliente="cliente" OnValidSubmit="Crear" Procesando="procesando"/>
+
+@code {
+	private Cliente cliente = new Cliente();
+	private bool procesando = false;
+
+	private async Task Crear()
+	{
+		procesando = true;
+
+		bool confirmed = await js.Confirm("¿Guardar cliente?");
+
+		if (confirmed)
+		{
+            cliente.EmpresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+
+			var respuesta = await manager.Post<Cliente, long>("api/clientes/CrearCliente", cliente);
+
+			if (respuesta.Estado == EstadosDeRespuesta.Error)
+			{
+				await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+			}
+			else
+			{
+				navigationManager.NavigateTo("/clientes");
+			}
+
+		}
+		
+		procesando = false;
+	}
+}

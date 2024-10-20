@@ -1,0 +1,61 @@
+﻿@page "/usuarios/editar1/{UsuarioId:long}"
+@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+@inject NavigationManager navigationManager
+@inject IJSRuntime js
+@attribute [Authorize]
+
+<h3>Editar Usuario</h3>
+
+@if (usuario == null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <FormularioUsuarios OnValidSubmit="Editar" usuario="usuario" Procesando="procesando"/>
+}
+
+@code {
+    [Parameter] public long UsuarioId { get; set; }
+    private bool procesando = false;
+    private UsuarioBin usuario;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var respuesta = await manager.Get<UsuarioBin>($"api/usuarios/{UsuarioId}");
+
+        if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            usuario = respuesta.Datos;
+        }
+    }
+
+    private async Task Editar()
+    {
+        procesando = true;
+
+        bool confirmed = await js.Confirm("¿Guardar cambios?");
+
+        if (confirmed)
+        {
+
+            var respuesta = await manager.Post<UsuarioBin, long>("api/usuarios/EditarUsuario", usuario);
+
+            if (respuesta.Estado == EstadosDeRespuesta.Error)
+            {
+                await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+            }
+            else
+            {
+                navigationManager.NavigateTo("/usuarios");
+            }
+        }
+
+        procesando = false;
+    }
+}

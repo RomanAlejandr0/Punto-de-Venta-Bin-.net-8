@@ -1,0 +1,49 @@
+﻿@inject NavigationManager navigationManager
+
+<h3>Formulario Usuario</h3>
+
+<EditForm Model="usuario" OnValidSubmit="OnValidSubmit">
+
+	<div class="row mb-2">
+		<div class="col-12 col-md-6">
+			<label>Nombre del Usuario</label>
+			<InputText class="form-control" @bind-Value="usuario.Nombre" />
+		</div>
+	
+	</div>
+	                
+	<div class="row mb-2">
+		<div class="col-12 col-md-6">
+			<label class="form-label">Correo Electronico</label>
+			<InputText class="form-control" @bind-Value="usuario.Email" />
+		</div>
+	</div>
+
+	<div class="row mb-3">
+		<div class="col-12 col-md-6">
+			<label class="form-label">Contraseña para inicio de sesion</label>
+			<InputText class="form-control" @bind-Value="usuario.Password" />
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-12 col-sm-auto">
+			<button type="submit" class="btn btn-lg btn-info">Guardar Cambios</button>
+		</div>
+		<div class="col-12 col-sm-auto">
+			<button class="btn btn-lg btn-danger" @onclick="Cancelar">Cancelar</button>
+		</div>
+	</div>
+</EditForm>
+
+@code {
+	[Parameter] public UsuarioBin usuario { get; set; }
+	[Parameter] public bool Procesando { get; set; }
+	[Parameter] public EventCallback OnValidSubmit { get; set; }
+
+	private void Cancelar()
+	{
+		navigationManager.NavigateTo("/usuarios");
+	}
+}
+

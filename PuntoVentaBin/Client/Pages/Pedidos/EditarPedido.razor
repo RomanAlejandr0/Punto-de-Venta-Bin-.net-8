@@ -1,0 +1,54 @@
+﻿@page "/pedidos/editar/{PedidoId:long}"
+@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+@inject NavigationManager navigationManager
+
+@attribute [Authorize]
+
+
+<h5 class="border-start border-2 ps-1 mb-3">Editar Pedido</h5>
+
+@if (pedido == null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <FormularioVentas venta="pedido" EsPedido="true" />
+}
+
+@code {
+    [Parameter] public long PedidoId { get; set; }
+    private Venta pedido = new Venta() { VentaDetalles = new List<VentaDetalle>(), FechaHoraVenta = DateTime.Now, EsPedido = true };
+
+    private List<Venta> VentasEnEspera = new List<Venta>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var respuesta = await manager.Get<Venta>($"api/pedidos/{PedidoId}");
+
+        if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            pedido = respuesta.Datos;
+        }
+    }
+
+    //private async Task Editar()
+    //{
+    //    var respuesta = await manager.Post<Pedido, long>("api/pedidos/GuardarPedido", pedido);
+
+    //    if (respuesta.Estado == EstadosDeRespuesta.Error)
+    //    {
+    //        await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+    //    }
+    //    else
+    //    {
+    //        navigationManager.NavigateTo("/pedidos");
+    //        await mostrarMensajes.MostrarMensajeExitoso(respuesta.Mensaje);
+    //    }
+    //}
+}

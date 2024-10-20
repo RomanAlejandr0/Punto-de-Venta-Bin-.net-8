@@ -1,0 +1,439 @@
+﻿@page "/"
+
+@inject NavigationManager navigate
+@inject AuthenticationStateProvider auth
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: #ffffff;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+        transition: background-color 0.3s, border-color 0.3s;
+    }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+    btn-outline-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+        transition: background-color 0.3s, border-color 0.3s;
+    }
+
+        btn-outline-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1.25rem;
+        border-radius: 0.3rem;
+    }
+
+        /* Opcional: Aumentar el tamaño de los iconos */
+        .btn-lg .bi {
+            font-size: 1.25rem;
+        }
+
+    .hero-section {
+        padding: 4rem 2rem;
+        text-align: center;
+        background-color: #ffffff;
+        margin-top: 4rem;
+        margin-bottom: 8rem;
+    }
+
+    .hero-section img {
+        width: 100px;
+        margin-bottom: 1.5rem;
+    }
+
+    .hero-section h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: #333333;
+    }
+
+    .hero-section p {
+        font-size: 1.1rem;
+        color: #555555;
+        margin-bottom: 2rem;
+    }
+
+    .hero-buttons .btn {
+        min-width: 200px;
+        font-size: 1rem;
+    }
+
+    .features-section {
+        padding: 4rem 2rem;
+        background-color: #f8f9fa;
+    }
+
+    .features-section h2 {
+        text-align: center;
+        margin-bottom: 3rem;
+        color: #333333;
+    }
+
+    .feature-card {
+        background-color: #ffffff;
+        border: none;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+    }
+
+    .feature-card img {
+        height: 200px;
+        object-fit: cover;
+        border-top-left-radius: 0.5rem;
+        border-top-right-radius: 0.5rem;
+    }
+
+    .feature-card .card-body {
+        padding: 1.5rem;
+    }
+
+    .testimonial-section {
+        padding: 4rem 2rem;
+    }
+
+    .testimonial-section h2 {
+        text-align: center;
+        margin-bottom: 3rem;
+        color: #333333;
+    }
+
+    .testimonial-card {
+        background-color: #ffffff;
+        border: none;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        padding: 2rem;
+        transition: transform 0.3s;
+    }
+
+    .testimonial-card:hover {
+        transform: translateY(-10px);
+    }
+
+    .testimonial-avatar {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 50%;
+        margin-bottom: 1rem;
+    }
+
+    .contact-section {
+        padding: 4rem 2rem;
+        background-color: #f8f9fa;
+    }
+
+    .contact-section h2 {
+        text-align: center;
+        margin-bottom: 3rem;
+        color: #333333;
+    }
+
+    .contact-form .form-control {
+        border-radius: 0.25rem;
+        border: 1px solid #ced4da;
+    }
+
+    .contact-form .form-control:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    }
+
+    .footer {
+        padding: 2rem;
+        background-color: #ffffff;
+        border-top: 1px solid #eaeaea;
+    }
+
+    .footer .nav-link {
+        color: #6c757d;
+        transition: color 0.3s;
+    }
+
+    .footer .nav-link:hover {
+        color: #007bff;
+    }
+
+    .footer .footer-icon {
+        width: 24px;
+        height: 24px;
+        fill: #6c757d;
+        transition: fill 0.3s;
+    }
+
+    .footer .footer-icon:hover {
+        fill: #007bff;
+    }
+
+    @@media (max-width: 768px) {
+        .hero-section h1 {
+            font-size: 2rem;
+        }
+
+        .hero-section p {
+            font-size: 1rem;
+        }
+
+        .hero-buttons .btn {
+            min-width: 150px;
+            font-size: 0.9rem;
+        }
+
+        .feature-card img {
+            height: 150px;
+        }
+
+        .testimonial-avatar {
+            width: 60px;
+            height: 60px;
+        }
+    }
+</style>
+
+
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4 shadow-sm">
+        <div class="container-fluid px-5 py-1">
+            <a class="navbar-brand" href="#">Hola</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+    </nav>
+
+
+
+    @* HERO SECTION *@
+    <section class="hero-section">
+        <img src="https://getbootstrap.com/docs/5.1/assets/brand/bootstrap-logo.svg" alt="Logo de Punto de Venta Bin">
+        <h1>Punto de Venta Bin</h1>
+        <p>
+            Punto de Venta Bin es una aplicación gratuita y fácil de usar que simplifica la administración diaria de tu negocio.
+        </p>
+        <div class="hero-buttons d-flex flex-column flex-sm-row justify-content-center gap-3">
+
+            <a class="btn btn-lg btn-primary mt-3" href="/registro">
+                <i class="bi bi-box-arrow-in-right me-2"></i> Registrar mi Negocio
+            </a>
+
+            <a class="btn btn-lg btn-outline-primary mt-3" href="/login">
+                <i class="bi bi-box-arrow-in-right me-2"></i> Iniciar sesión
+            </a>
+            
+        </div>
+    </section>
+
+    <div class="b-example-divider"></div>
+
+    @* CARACTERÍSTICAS *@
+    <section class="features-section">
+        <div class="container">
+            <h2 class="pb-2 border-bottom">Características</h2>
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                <div class="col">
+                    <div class="card feature-card h-100">
+                        <img src="/ImagenesIndex/PuntoVentaBinPicture.png" class="card-img-top" alt="Diseño elegante">
+                        <div class="card-body">
+                            <h5 class="card-title">Diseño Elegante</h5>
+                            <p class="card-text">
+                                Un diseño sencillo y elegante con colores llamativos y un enfoque minimalista.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card feature-card h-100">
+                        <img src="/ImagenesIndex/AdaptablePhoneTabletPc.png" class="card-img-top" alt="Adaptable">
+                        <div class="card-body">
+                            <h5 class="card-title">Adaptable</h5>
+                            <p class="card-text">
+                                La aplicación se adapta al tamaño de pantalla de cualquier dispositivo: celular, tablet o PC.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card feature-card h-100">
+                        <img src="/ImagenesIndex/NubeInternet.png" class="card-img-top" alt="Información Segura">
+                        <div class="card-body">
+                            <h5 class="card-title">Información Segura</h5>
+                            <p class="card-text">
+                                La información se respalda en bases de datos en la nube, asegurando que nunca pierdas tus datos.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="b-example-divider"></div>
+
+    @* TESTIMONIOS *@
+    <section class="testimonial-section">
+        <div class="container">
+            <h2 class="pb-2 border-bottom">Testimonios</h2>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="testimonial-card text-center">
+                        <img src="/ImagenesIndex/testimonial1.jpg" alt="Cliente 1" class="testimonial-avatar mx-auto">
+                        <h5 class="mt-3">María González</h5>
+                        <p class="text-muted">
+                            "Punto de Venta Bin ha transformado la gestión de mi tienda. Es intuitiva y muy eficiente."
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="testimonial-card text-center">
+                        <img src="/ImagenesIndex/testimonial2.jpg" alt="Cliente 2" class="testimonial-avatar mx-auto">
+                        <h5 class="mt-3">Carlos Pérez</h5>
+                        <p class="text-muted">
+                            "La adaptabilidad de la aplicación me permite trabajar desde cualquier lugar sin complicaciones."
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="testimonial-card text-center">
+                        <img src="/ImagenesIndex/testimonial3.jpg" alt="Cliente 3" class="testimonial-avatar mx-auto">
+                        <h5 class="mt-3">Ana López</h5>
+                        <p class="text-muted">
+                            "La seguridad de los datos es fundamental para mi negocio, y Punto de Venta Bin lo garantiza."
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="b-example-divider"></div>
+
+    @* CONTACTO *@
+    <section class="contact-section">
+        <div class="container">
+            <h2 class="pb-2 border-bottom">Contáctanos</h2>
+            <div class="row g-5">
+                <div class="col-lg-4">
+                    <h3 class="fw-bold mb-3">Información de Contacto</h3>
+                    <div class="list-group">
+                        <a href="https://wa.me/5617242603" class="list-group-item list-group-item-action d-flex gap-3 py-3 align-items-center">
+                            <img src="/ImagenesIndex/whatsappCirculo.png" alt="WhatsApp" width="32" height="32" class="rounded-circle flex-shrink-0">
+                            <div>
+                                <span>56 17 24 26 03</span>
+                            </div>
+                        </a>
+                        <a href="https://www.facebook.com/PuntoVentaBin" class="list-group-item list-group-item-action d-flex gap-3 py-3 align-items-center">
+                            <img src="/ImagenesIndex/facebookCirculo.png" alt="Facebook" width="32" height="32" class="rounded-circle flex-shrink-0">
+                            <div>
+                                <span>Punto de Venta Bin</span>
+                            </div>
+                        </a>
+                        <a href="mailto:puntoventabin@gmail.com" class="list-group-item list-group-item-action d-flex gap-3 py-3 align-items-center">
+                            <img src="/ImagenesIndex/gmailCirculo.png" alt="Gmail" width="32" height="32" class="rounded-circle flex-shrink-0">
+                            <div>
+                                <span>puntoventabin@gmail.com</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <h3 class="fw-bold mb-3">Envíanos un Correo</h3>
+                    <form class="row g-3 contact-form">
+                        <div class="col-md-6">
+                            <label for="firstName" class="form-label">Nombres</label>
+                            <input type="text" class="form-control" id="firstName" placeholder="Ingresa tus nombres" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="lastName" class="form-label">Apellidos</label>
+                            <input type="text" class="form-control" id="lastName" placeholder="Ingresa tus apellidos" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="email" class="form-label">Correo Electrónico</label>
+                            <input type="email" class="form-control" id="email" placeholder="ejemplo@gmail.com" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="subject" class="form-label">Asunto</label>
+                            <input type="text" class="form-control" id="subject" placeholder="Asunto de tu mensaje" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="message" class="form-label">Mensaje</label>
+                            <textarea class="form-control" id="message" rows="4" placeholder="Escribe tu mensaje aquí" required></textarea>
+                        </div>
+                        <div class="col-12 text-end">
+                            <button type="submit" class="btn btn-primary">Enviar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="b-example-divider"></div>
+
+    @* FOOTER *@
+    <footer class="footer py-4">
+        <div class="container d-flex flex-wrap justify-content-between align-items-center">
+            <!-- Logo y Derechos de Autor -->
+            <div class="d-flex align-items-center mb-3 mb-md-0 text-muted">
+                <i class="bi bi-bootstrap me-2" style="font-size: 1.5rem; color: #007bff;"></i>
+                <span>Punto de Venta Bin © 2024</span>
+            </div>
+
+            <!-- Enlaces de Redes Sociales -->
+            <ul class="nav col-md-4 justify-content-end list-unstyled d-flex">
+                <li class="ms-3">
+                    <a class="text-muted" href="https://www.facebook.com/PuntoVentaBin" aria-label="Facebook">
+                        <i class="bi bi-facebook footer-icon"></i>
+                    </a>
+                </li>
+                <li class="ms-3">
+                    <a class="text-muted" href="https://wa.me/5617242603" aria-label="WhatsApp">
+                        <i class="bi bi-whatsapp footer-icon"></i>
+                    </a>
+                </li>
+                <li class="ms-3">
+                    <a class="text-muted" href="mailto:puntoventabin@gmail.com" aria-label="Gmail">
+                        <i class="bi bi-envelope footer-icon"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </footer>
+   
+</body>
+
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await auth.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            navigate.NavigateTo("/mis-negocios");
+        }
+    }
+}

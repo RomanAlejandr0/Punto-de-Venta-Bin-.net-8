@@ -1,0 +1,114 @@
+﻿<button type="button" class="btn btn-sm btn-outline-primary w-100" data-bs-toggle="modal"
+        data-bs-target="#ModalListaProductos" @onclick="(() => { PalabraBusqueda = string.Empty; Productos = ProductosListaCompleta; })">
+    Todos los productos
+</button>
+
+<!-- Modal de Lista de Productos -->
+<div class="modal fade" id="ModalListaProductos" tabindex="-1" aria-labelledby="ModalListaProductosLabel" aria-hidden="true">
+    <div class="modal-dialog  modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            
+            <div class="modal-header">
+                <h5 class="modal-title" id="ModalListaProductosLabel">Lista de Productos</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="row position-sticky top-0" style="z-index: 10;">
+                    <div class="col-6">
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control" @bind="PalabraBusqueda" @bind:event="oninput"
+                                   id="DatalistProductos" aria-label="Recipient's username" aria-describedby="button-addon2"
+                                   placeholder="Escribe para buscar..." />
+
+                            <button class="btn btn-outline-secondary" type="button"
+                                    @onclick="(() => { PalabraBusqueda = string.Empty; Productos = ProductosListaCompleta;})">
+                                Limpiar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="position-sticky mt-3">
+                    <table class="table table-primary table-hover text-center mb-0 align-middle position-sticky">
+                        <thead>
+                            <tr class="text-center align-middle">
+                                <th scope="col" style="width: 35%;">Producto</th>
+                                <th scope="col" style="width: 25%;">
+                                    <p class="ps-4 d-inline">Inventario</p>
+                                    <span class="badge rounded-pill bg-primary border btn" @onclick="OrdenarProductosPorCantidad">
+                                        <i class="bi bi-arrow-down-up"></i>
+                                    </span>
+                                </th>
+                                <th scope="col" style="width: 25%;">Precio Venta</th>
+                                <th scope="col" style="width: 15%;"></th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+
+                <div style="overflow-y: scroll; height: 480px;">
+                    <table class="table table-hover text-center mb-0 align-middle">
+                        <tbody>
+                            @foreach (var producto in Productos.
+                            Where(p => p.Descripcion.ToUpper().Contains(PalabraBusqueda.ToUpper())))
+                            {
+                                <tr class="text-center align-middle">
+                                    <td scope="row" class="text-start" style="width: 35%;">@producto.Descripcion</td>
+                                    <td style="width: 25%;">@producto.CantidadInventario</td>
+                                    <td style="width: 25%;">@producto.PrecioVenta.ToString("$ 0.00")</td>
+                                    <td style="width: 15%;">
+                                        <button class="btn bt-sm btn-outline-primary" @onclick="(() => SeleccionarProductoListaProductos(producto.Id))" data-bs-dismiss="modal">
+                                            <i class="bi bi-arrow-right-circle-fill"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+@code {
+    [Parameter] public List<ProductoDTO> Productos { get; set; }
+
+    [Parameter] public List<ProductoDTO> ProductosListaCompleta { get; set; }
+
+    [Parameter] public EventCallback<long> OnSeleccionarProducto{ get; set; }
+
+    public string PalabraBusqueda { get; set; } = string.Empty;
+
+    private bool ordenadosPorCantidadAscendente = true;/*0-1*/
+
+    protected async Task SeleccionarProductoListaProductos(long productoId)
+    {
+        //CERRAR MODAL
+
+        Productos = ProductosListaCompleta;
+
+        PalabraBusqueda = string.Empty;
+
+        await OnSeleccionarProducto.InvokeAsync(productoId);
+    }
+
+    private void OrdenarProductosPorCantidad()
+    {
+        ordenadosPorCantidadAscendente = !ordenadosPorCantidadAscendente;
+
+        if (ordenadosPorCantidadAscendente)
+        {
+            Productos = ProductosListaCompleta.OrderBy(p => p.CantidadInventario).ToList();
+
+        }
+        else
+        {
+            Productos = ProductosListaCompleta.OrderByDescending(p => p.CantidadInventario).ToList();
+        }
+    }
+}

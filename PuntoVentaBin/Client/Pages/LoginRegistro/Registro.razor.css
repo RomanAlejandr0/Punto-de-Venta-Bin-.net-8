@@ -1,0 +1,111 @@
+﻿/*
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.back-button {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    color: #007bff;
+    background: transparent;
+    border: none;
+}
+
+    .back-button:hover {
+        color: #0056b3;
+        text-decoration: none;
+    }
+
+.form-register {
+    width: 100%;
+    max-width: 500px;
+    padding: 2rem;
+    margin: auto;
+    background-color: #ffffff;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+    .form-register img {
+        width: 120px;
+    }
+
+    .form-register h4 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: #333333;
+        text-align: center;
+    }
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border: none;
+}
+
+.form-control {
+    border-radius: 0.25rem;
+    border: 1px solid #ced4da;
+}
+
+    .form-control:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    }
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #004085;
+    }
+
+.btn-outline-primary {
+    border-color: #007bff;
+    color: #007bff;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+    .btn-outline-primary:hover {
+        background-color: #0056b3;
+        color: #ffffff;
+    }
+
+.password-validation {
+    margin-top: 1rem;
+}
+
+    .password-validation .list-group-item {
+        padding: 0.5rem 1rem;
+        border: none;
+        background-color: transparent;
+    }
+
+    .password-validation .bi-check-circle-fill {
+        color: #28a745;
+    }
+
+    .password-validation .bi-x-circle-fill {
+        color: #dc3545;
+    }
+
+.alert-info {
+    font-size: 0.9rem;
+}
+
+@media (max-width: 576px) {
+    .form-register {
+        padding: 1rem;
+    }
+}
+*/
