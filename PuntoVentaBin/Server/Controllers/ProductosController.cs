@@ -59,7 +59,7 @@ namespace PuntoVentaBIN.Server.Controllers
                 var productos = await context.Productos.
                     //Include(x => x.ProductosPaquete).
                     AsNoTracking().
-                    Where(x => x.EmpresaId == empresaId).
+                    Where(x => x.NegocioId == empresaId).
                     OrderBy(x => x.Descripcion).
                     ToListAsync().
                     ConfigureAwait(false);
@@ -87,7 +87,7 @@ namespace PuntoVentaBIN.Server.Controllers
             try
             {
                 var productosDTO = await context.Productos.
-                    Where(x => x.EmpresaId == empresaId).
+                    Where(x => x.NegocioId == empresaId).
                     Select(a => new ProductoDTO
                     {
                         Id = a.Id,

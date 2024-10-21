@@ -1,40 +1,32 @@
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
-
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
-
   <ItemGroup>
     <Content Remove="Pages\Pedidos\PedidoFormulario.razor" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.8" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.8" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.8" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Forms" Version="8.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.10" PrivateAssets="all" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Shared\PuntoVentaBin.Shared.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
   </ItemGroup>
-
   <ItemGroup>
     <UpToDateCheckInput Remove="Pages\Pedidos\PedidoFormulario.razor" />
   </ItemGroup>
-
   <ItemGroup>
     <_ContentIncludedByDefault Remove="Pages\Pedidos\PedidoFormulario.razor" />
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="wwwroot\js\" />
   </ItemGroup>
-
 </Project>

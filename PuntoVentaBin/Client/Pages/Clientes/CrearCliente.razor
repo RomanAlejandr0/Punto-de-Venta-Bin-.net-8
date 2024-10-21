@@ -23,7 +23,7 @@
 
 		if (confirmed)
 		{
-            cliente.EmpresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+            cliente.NegocioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
 
 			var respuesta = await manager.Post<Cliente, long>("api/clientes/CrearCliente", cliente);
 

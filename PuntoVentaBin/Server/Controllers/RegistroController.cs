@@ -59,6 +59,8 @@ namespace PuntoVentaBin.Server.Controllers
                     value.FechaRegistro = DateTime.Now;
                     value.TokenConfirmacion = Guid.NewGuid().ToString();
                     value.CuentaActivada = false; // La cuenta aún no está activada
+                    value.NegocioId = 1014;
+                    value.RolId = 1;
 
                     if (!TryValidateModel(value))
                     {
@@ -69,6 +71,7 @@ namespace PuntoVentaBin.Server.Controllers
 
                     context.UsuariosBin.Add(value);
                     await context.SaveChangesAsync(true);
+                   
 
                     // Enviar correo de confirmación
                     try

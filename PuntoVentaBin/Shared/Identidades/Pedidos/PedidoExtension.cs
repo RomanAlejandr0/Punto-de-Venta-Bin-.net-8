@@ -3,7 +3,7 @@
     public class PedidoExtension
     {
         public long Id { get; set; }
-        public long EmpresaId { get; set; }
+        public long NegocioId { get; set; }
         public long VentaId { get; set; }
         public DateTime FechaEntrega { get; set; } = DateTime.Now;
         public string LugarEntrega { get; set; }

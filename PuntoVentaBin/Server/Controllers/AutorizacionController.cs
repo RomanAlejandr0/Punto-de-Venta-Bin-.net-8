@@ -7,6 +7,7 @@ using PuntoVentaBin.Shared.Identidades;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using PuntoVentaBin.Shared.AccesoDatos;
+using PuntoVentaBin.Shared.Identidades.Adm_PerfilTareas;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -52,7 +53,12 @@ namespace PuntoVentaBin.Server.Controllers
                     if (user.Password == usuario.Password.Trim())
                     {
                         // Caso 4: Autenticación exitosa
-                        respuesta.Datos = BuildToken(user);
+                        var claims = new List<Claim>
+                        {
+                            new Claim("Autorizacion", "False")
+                        };
+
+                        respuesta.Datos = BuildToken(user, claims);
                         respuesta.Estado = EstadosDeRespuesta.Correcto;
                     }
                     else
@@ -73,7 +79,7 @@ namespace PuntoVentaBin.Server.Controllers
             return respuesta;
         }
 
-        private UserToken BuildToken(UsuarioBin usuario)
+        private UserToken BuildToken(UsuarioBin usuario, List<Claim> claimsAdicionales = null)
         {
             var claims = new List<Claim>()
             {
@@ -81,7 +87,13 @@ namespace PuntoVentaBin.Server.Controllers
                 new Claim(ClaimTypes.Name, usuario.Nombre),
                 new Claim(ClaimTypes.Email, usuario.Email),
                 new Claim("AuthId", usuario.Id.ToString()),
+                new Claim("EmpresaId", usuario.NegocioId.ToString())
             };
+
+            if (claimsAdicionales != null && claimsAdicionales.Any())
+            {
+                claims.AddRange(claimsAdicionales);
+            }
 
             claims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
 
@@ -102,84 +114,106 @@ namespace PuntoVentaBin.Server.Controllers
         }
 
 
-        //[HttpPost]
-        //public async Task<Respuesta<UserToken>> SeleccionarNegocio([FromBody] Negocio negocioInfo)
-        //{
-        //    var respuesta = new Respuesta<UserToken>() { Datos = new UserToken() };
-        //    try
-        //    {
-        //        // Obtener el ID del usuario autenticado desde el token
-        //        var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "AuthId");
-        //        if (userIdClaim == null)
-        //        {
-        //            //respuesta.Estado = EstadosDeRespuesta.NoAutorizado;
-        //            respuesta.Estado = EstadosDeRespuesta.Error;
-        //            respuesta.Mensaje = "Usuario no autenticado";
-        //            return respuesta;
-        //        }
+        [HttpPost]
+        [Route("{action}")]
+        public async Task<Respuesta<UserToken>> SeleccionarNegocio([FromBody] long usuarioId)
+        {
+            var respuesta = new Respuesta<UserToken>() { Datos = new UserToken() };
+            try
+            {
+                // Obtener el ID del usuario autenticado desde el token
+                //var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "AuthId");
+                //if (userIdClaim == null)
+                //{
+                //    //respuesta.Estado = EstadosDeRespuesta.NoAutorizado;
+                //    respuesta.Estado = EstadosDeRespuesta.Error;
+                //    respuesta.Mensaje = "Usuario no autenticado";
+                //    return respuesta;
+                //}
 
-        //        var userId = int.Parse(userIdClaim.Value);
+                var userId = usuarioId;
 
-        //        // Obtener el usuario desde la base de datos
-        //        var user = await datos.UsuariosBin.AsNoTracking()
-        //            .FirstOrDefaultAsync(u => u.Id == userId)
-        //            .ConfigureAwait(false);
+                // Obtener el usuario desde la base de datos
+                var user = await datos.UsuariosBin.AsNoTracking()
+                    .FirstOrDefaultAsync(u => u.Id == userId)
+                    .ConfigureAwait(false);
 
-        //        if (user != null)
-        //        {
-        //            // Verificar que el usuario tiene acceso al negocio seleccionado
-        //            var tieneAcceso = await datos.UsuariosRolesNegocios.AsNoTracking()
-        //                .AnyAsync(urn => urn.UsuarioId == userId && urn.NegocioId == negocioInfo.Id)
-        //                .ConfigureAwait(false);
+                if (user != null)
+                {
+                    // Verificar que el usuario tiene acceso al negocio seleccionado
+                    //var tieneAcceso = await datos.UsuariosRolesNegocios.AsNoTracking()
+                    //    .AnyAsync(urn => urn.UsuarioId == userId && urn.NegocioId == 1014)
+                    //    .ConfigureAwait(false);
 
-        //            if (!tieneAcceso)
-        //            {
-        //                //respuesta.Estado = EstadosDeRespuesta.NoAutorizado;
-        //                respuesta.Estado = EstadosDeRespuesta.Error;
-        //                respuesta.Mensaje = "No tiene acceso al negocio seleccionado";
-        //                return respuesta;
-        //            }
+                    //if (!tieneAcceso)
+                    //{
+                    //    //respuesta.Estado = EstadosDeRespuesta.NoAutorizado;
+                    //    respuesta.Estado = EstadosDeRespuesta.Error;
+                    //    respuesta.Mensaje = "No tiene acceso al negocio seleccionado";
+                    //    return respuesta;
+                    //}
 
-        //            // Obtener los roles y permisos del usuario para el negocio seleccionado
-        //            var rolesPermisos = await (from urn in datos.UsuariosRolesNegocios
-        //                                       join rp in datos.Tbl_RolesPermisos on urn.RolId equals rp.RolId
-        //                                       join p in datos.Tbl_Permisos on rp.PermisoId equals p.PermisoId
-        //                                       where urn.UsuarioId == userId && urn.NegocioId == negocioInfo.Id
-        //                                       select p).ToListAsync().ConfigureAwait(false);
+                    var permisosPerfil = await (from rp in datos.RolesPermisos
+                                                join p in datos.Permisos on rp.PermisoID equals p.Id
+                                                where rp.RolID == user.RolId
+                                                select p).ToListAsync().ConfigureAwait(false);
 
-        //            // Crear nuevos claims con los permisos del negocio
-        //            var claims = new List<Claim>
-        //    {
-        //        new Claim(ClaimTypes.Name, user.Nombre.ToUpper().Trim()),
-        //        new Claim("AuthId", user.Id.ToString()),
-        //        new Claim("Id", negocioInfo.Id.ToString()),
-        //        new Claim("Nombre", user.Nombre.ToString())
-        //    };
+                    var claims = new List<Claim>
+                    {
+                        new Claim("Autorizacion", "True")
+                    };
 
-        //            // Agregar los permisos como roles
-        //            foreach (var permiso in rolesPermisos)
-        //            {
-        //                claims.Add(new Claim(ClaimTypes.Role, permiso.Descripcion));
-        //            }
+                    // Agregar los permisos como roles
+                    foreach (var permiso in permisosPerfil)
+                    {
+                        claims.Add(new Claim(ClaimTypes.Role, permiso.Nombre));
+                    }
 
-        //            // Generar un nuevo token JWT con los permisos del negocio
-        //            respuesta.Datos = BuildToken(user, claims);
-        //            respuesta.Estado = EstadosDeRespuesta.Correcto;
-        //        }
-        //        else
-        //        {
-        //            respuesta.Estado = EstadosDeRespuesta.NoProceso;
-        //            respuesta.Mensaje = "Usuario no encontrado";
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        respuesta.Mensaje = "Error al procesar la selección del negocio.";
-        //    }
-        //    return respuesta;
-        //}
+                    // Generar un nuevo token JWT con los permisos del negocio
+                    respuesta.Datos = BuildToken(user, claims);
+                    respuesta.Estado = EstadosDeRespuesta.Correcto;
+                }
+                else
+                {
+                    respuesta.Estado = EstadosDeRespuesta.NoProceso;
+                    respuesta.Mensaje = "Usuario no encontrado";
+                }
+            }
+            catch (Exception ex)
+            {
+                respuesta.Mensaje = "Error al procesar la selección del negocio.";
+            }
+            return respuesta;
+        }
 
 
+        [HttpPost]
+        [Route("{action}")]
+        public async Task<Respuesta<UserToken>> EliminarPermisosUsuario([FromBody] long usuarioId)
+        {
+            var respuesta = new Respuesta<UserToken>() { Datos = new UserToken() };
+            try
+            {
+                var usuario = await datos.UsuariosBin.FirstOrDefaultAsync(x => x.Id == usuarioId);
+
+                var claims = new List<Claim>
+                {
+                    new Claim("Autorizacion", "False")
+                };
+
+                respuesta.Datos = BuildToken(usuario, claims);
+                respuesta.Estado = EstadosDeRespuesta.Correcto;
+
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones generales
+                respuesta.Estado = EstadosDeRespuesta.Error;
+                respuesta.Mensaje = "Error al autenticar.";
+                // Opcional: Registrar el error en un sistema de logging
+            }
+            return respuesta;
+        }
 
         //[HttpPost]
         //public async Task<Respuesta<UserToken>> Post([FromBody] UserInfo usuario)

@@ -24,7 +24,7 @@
 		if (confirmed)
 		{
 
-			provedor.EmpresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+			provedor.NegocioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
 
 			var respuesta = await manager.Post<Provedor, long>("api/provedores/CrearProvedor", provedor);
 

@@ -36,7 +36,6 @@ namespace PuntoVentaBin.Shared.AccesoDatos
         public DbSet<PedidoExtension> PedidosExtensiones { get; set; }
 
         public DbSet<Movimiento> Movimientos { get; set; }
-        public DbSet<UsuarioRolNegocio> UsuariosRolesNegocios { get; set; }
 
 
         #region Productos
@@ -54,35 +53,6 @@ namespace PuntoVentaBin.Shared.AccesoDatos
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-
-            // Configuración de la clave primaria compuesta
-            modelBuilder.Entity<UsuarioRolNegocio>()
-                .HasKey(urn => new { urn.UsuarioId, urn.RolId, urn.NegocioId });
-
-            // Relación con Usuario
-            modelBuilder.Entity<UsuarioRolNegocio>()
-                .HasOne(urn => urn.Usuario)
-                .WithMany(u => u.UsuariosRolesNegocios)
-                .HasForeignKey(urn => urn.UsuarioId);
-
-            // Relación con Rol
-            modelBuilder.Entity<UsuarioRolNegocio>()
-                .HasOne(urn => urn.Rol)
-                .WithMany(r => r.UsuariosRolesNegocios)
-                .HasForeignKey(urn => urn.RolId);
-
-            // Relación con Negocio
-            modelBuilder.Entity<UsuarioRolNegocio>()
-                .HasOne(urn => urn.Negocio)
-                .WithMany(n => n.UsuariosRolesNegocios)
-                .HasForeignKey(urn => urn.NegocioId);
-
-            // Índice único para evitar duplicados de UsuarioId y RolId en un Negocio
-            modelBuilder.Entity<UsuarioRolNegocio>()
-                .HasIndex(urn => new { urn.UsuarioId, urn.RolId })
-                .IsUnique();
-
 
             modelBuilder.Entity<Cliente>().Ignore(x => x.Ventas);
 

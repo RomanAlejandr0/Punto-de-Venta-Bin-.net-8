@@ -4,7 +4,10 @@ namespace PuntoVentaBin.Shared.Identidades
 {
     public class UsuarioBin
     {
+        [Key]
         public long Id { get; set; }
+        public int RolId { get; set; }
+        public long NegocioId { get; set; }
 
         [Required(ErrorMessage = "El mombre es obligatorio")]
         [StringLength(100, ErrorMessage = "Limite de caracteres: 100.")]
@@ -29,7 +32,6 @@ namespace PuntoVentaBin.Shared.Identidades
         public string TokenConfirmacion { get; set; }
         public string TokenRecuperacion { get; set; }
         public DateTime? FechaExpiracionTokenRecuperacion { get; set; }
-        public List<UsuarioRolNegocio> UsuariosRolesNegocios { get; set; }
 
     }
 

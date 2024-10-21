@@ -25,7 +25,7 @@ namespace PuntoVentaBin.Server.Controllers
             try
             {
                 respuesta.Datos = await context.ProductoCategorias.
-                    Where(x => x.EmpresaId == empresaId).
+                    Where(x => x.NegocioId == empresaId).
                     OrderBy(x => x.Nombre).
                     AsNoTracking().
                     ToListAsync();

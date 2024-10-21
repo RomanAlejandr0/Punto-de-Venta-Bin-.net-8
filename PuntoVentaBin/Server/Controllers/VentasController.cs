@@ -34,7 +34,7 @@ namespace PuntoVentaBin.Server.Controllers
             try
             {
                 Ventas = await context.Ventas.
-                    Where(x => x.EmpresaId == periodoFecha.EmpresaId &&
+                    Where(x => x.NegocioId == periodoFecha.NegocioId &&
                         x.FechaHoraVenta >= periodoFecha.FechaInicio &&
                         x.FechaHoraVenta <= periodoFecha.FechaFin).
                     OrderByDescending(x => x.FechaHoraVenta).
@@ -86,7 +86,6 @@ namespace PuntoVentaBin.Server.Controllers
 
             try
             {
-                venta.VentaDetalles.ForEach(v => v.EmpresaId = venta.EmpresaId);
 
                 context.Ventas.Add(venta);
                 await context.SaveChangesAsync();

@@ -20,7 +20,7 @@
 
 	private async Task Crear()
 	{
-		pedido.EmpresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+		pedido.NegocioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
         //venta.ClienteId = cliente.Id;
 
         var respuesta = await manager.Post<Venta, long>("api/pedidos/GuardarPedido", pedido);

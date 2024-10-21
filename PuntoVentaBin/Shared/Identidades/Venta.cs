@@ -11,7 +11,7 @@ namespace PuntoVentaBin.Shared.Identidades
             PedidoExtension = new PedidoExtension();
         }
 
-        public long EmpresaId { get; set; }
+        public long NegocioId { get; set; }
         public long UsuarioId { get; set; }
         public long ClienteId { get; set; }
         [Key]

@@ -5,6 +5,9 @@
 @inject AuthenticationStateProvider auth
 
 
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+
 
 <style>
     html,
@@ -126,7 +129,7 @@
 <div class="d-flex align-items-center justify-content-center vh-100">
     <main class="form-register">
         <EditForm Model="usuario" OnValidSubmit="EnviarRegistroUsuario">
-
+            <DataAnnotationsValidator />
             <h4>Datos del Usuario</h4>
 
             <div class="input-group input-group-lg mb-3">
@@ -136,6 +139,8 @@
                 <InputText type="text" class="form-control" placeholder="Nombre Completo" @bind-Value="usuario.Nombre" />
             </div>
             <ValidationMessage For="(() => usuario.Nombre)" />
+
+
 
             <div class="input-group input-group-lg mb-3">
                 <span class="input-group-text">
@@ -209,7 +214,7 @@
             <div class="row justify-content-end mt-4">
                 <!-- Botón de Registrarse -->
                 <div class="col-12 mb-3">
-                    <button type="submit" class="btn btn-primary w-100 btn-lg" @onclick="(() => EnviarRegistroUsuario())" disabled="@(procesando == true)">
+                    <button type="submit" class="btn btn-primary w-100 btn-lg" disabled="@(procesando == true)">
                         <i class="bi bi-person-plus me-2"></i> Registrarse
                     </button>
                 </div>

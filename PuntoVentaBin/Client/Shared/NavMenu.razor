@@ -43,7 +43,7 @@
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <button class="btn btn-sm btn-warning w-100" @onclick="Logout">Salir</button>
+            <button class="btn btn-sm btn-warning w-100" @onclick="RegresarAMisNegocios">Regresar</button>
         </div>
     </nav>
 </div>
@@ -58,10 +58,14 @@
         collapseNavMenu = !collapseNavMenu;
     }
 
-    private async Task Logout()
+
+
+    private async Task RegresarAMisNegocios()
     {
-        await loginService.Logout();
-        var Tarea = Task.Run(() => navigate.NavigateTo("/"));
-        await Tarea;
+        navigate.NavigateTo("/regresando-MisNegocios");
+
+        // await loginService.Logout();
+        // var Tarea = Task.Run(() => navigate.NavigateTo("/"));
+        // await Tarea;
     }
 }

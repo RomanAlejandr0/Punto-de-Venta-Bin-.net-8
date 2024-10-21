@@ -6,7 +6,7 @@ namespace PuntoVentaBin.Shared.Identidades.Productos
     {
         [Key]
         public long Id { get; set; }
-        public long EmpresaId { get; set; }
+        public long NegocioId { get; set; }
         public string Nombre { get; set; }
 
     }

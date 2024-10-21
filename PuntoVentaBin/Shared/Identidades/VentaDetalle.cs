@@ -4,7 +4,6 @@ namespace PuntoVentaBin.Shared.Identidades
 {
     public class VentaDetalle
     {
-        public long EmpresaId { get; set; }
         public long VentaId { get; set; }
         [Key]
         public long Id { get; set; }

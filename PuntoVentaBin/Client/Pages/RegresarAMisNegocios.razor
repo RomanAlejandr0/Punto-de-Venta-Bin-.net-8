@@ -1,0 +1,51 @@
+﻿@page "/regresando-MisNegocios"
+
+@inject ILoginService loginService
+@inject NavigationManager navigate
+@inject IManager manager
+@inject AuthenticationStateProvider auth
+
+
+<p>Regresando a mis negocios...</p>
+
+@code {
+
+    protected async override Task OnInitializedAsync()
+    {
+        var usuarioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "AuthId").Value);
+
+        await EliminarPermisosUsuario(usuarioId);
+        
+        
+        navigate.NavigateTo("/mis-negocios", true);
+    }
+
+
+    private async Task EliminarPermisosUsuario(long usuarioId)
+    {
+        // procesando = true;
+        // mensaje = "Cargando...";
+
+        var respuesta = await manager.Post<long, UserToken>("api/Autorizacion/EliminarPermisosUsuario", usuarioId);
+
+        if (respuesta.Estado == EstadosDeRespuesta.Correcto)
+        {
+            await loginService.Login(respuesta.Datos.Token);
+            navigate.NavigateTo("/mis-negocios");
+        }
+        else if (respuesta.Estado == EstadosDeRespuesta.NoProceso)
+        {
+            // await mostrarMensajes.MostrarMensajeInformacion(mensajeLogin);
+            Console.WriteLine("");
+
+        }
+        else if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            // await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+            Console.WriteLine("");
+
+        }
+
+        // procesando = false;
+    }
+}

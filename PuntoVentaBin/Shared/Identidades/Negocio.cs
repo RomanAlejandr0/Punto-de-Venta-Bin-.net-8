@@ -6,8 +6,6 @@ namespace PuntoVentaBin.Shared.Identidades
     {
         public Negocio()
         {
-            Cliente = new Cliente();
-            //Usuarios = new List<UsuarioBin>();
             Clientes = new List<Cliente>();
         }
 
@@ -26,11 +24,7 @@ namespace PuntoVentaBin.Shared.Identidades
         public string CodigoPostal { get; set; }
         public DateTime FechaRegistro { get; set; }
 
-        public Cliente Cliente { get; set; }
-        //public List<UsuarioBin> Usuarios { get; set; }
         public List<Cliente> Clientes { get; set; }
-
-        public List<UsuarioRolNegocio> UsuariosRolesNegocios { get; set; }
 
     }
 }

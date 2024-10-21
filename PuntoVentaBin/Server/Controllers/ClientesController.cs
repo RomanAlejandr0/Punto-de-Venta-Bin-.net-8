@@ -45,7 +45,7 @@ namespace PuntoVentaBin.Server.Controllers
             try
             {
                 respuesta.Datos = await context.Clientes.
-                    Where(x => x.EmpresaId == empresaId).
+                    Where(x => x.NegocioId == empresaId).
                     OrderBy(x => x.Nombre).
                     ToListAsync();
             }
@@ -66,7 +66,7 @@ namespace PuntoVentaBin.Server.Controllers
             try
             {
                 respuesta.Datos = await context.Clientes.
-                    Where(x => x.EmpresaId == empresaId).
+                    Where(x => x.NegocioId == empresaId).
                     Select(a => new ClienteDTO
                     {
                         Id = a.Id,

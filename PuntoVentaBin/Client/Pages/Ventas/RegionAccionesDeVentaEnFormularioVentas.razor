@@ -126,7 +126,7 @@
             Cliente = Clientes.First(x => x.Nombre == _nombreClienteGenerico);
         }
 
-        Venta.EmpresaId = empresaId;
+        Venta.NegocioId = empresaId;
         Venta.UsuarioId = usuarioId;
         Venta.FechaHoraVenta = DateTime.Now;
         Venta.ClienteId = Cliente.Id;

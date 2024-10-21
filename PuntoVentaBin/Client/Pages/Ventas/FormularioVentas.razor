@@ -164,8 +164,8 @@ else
     {
         CargandoData = true;
 
-        empresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
         usuarioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "AuthId").Value);
+        empresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
 
         await CargarClientes();
         await CargarProductos();

@@ -160,13 +160,13 @@ else
     private void Editar(Categoria value)
     {
         categoriaEdicion.Id = value.Id;
-        categoriaEdicion.EmpresaId = value.EmpresaId;
+        categoriaEdicion.NegocioId = value.NegocioId;
         categoriaEdicion.Nombre = value.Nombre;
     }
 
     private async Task GuardarCategoria()
     {
-        categoriaEdicion.EmpresaId = empresaId;
+        categoriaEdicion.NegocioId = empresaId;
 
         if (categoriaEdicion.Id == 0 && Categorias.Exists(x => x.Nombre.Trim().ToUpper() == categoriaEdicion.Nombre.Trim().ToUpper()))
         {

@@ -114,6 +114,7 @@
 <div class="d-flex align-items-center justify-content-center vh-100">
     <main class="form-signin">
         <EditForm OnValidSubmit="Ingresar" Model="usuario">
+            <DataAnnotationsValidator />
             <h4 class="h3 fw-normal text-center">Bienvenido</h4>
 
             <img src="/ImagenesIndex/store.png" class="mb-4 rounded mx-auto d-block img-fluid" alt="Logo de la Aplicación" />
@@ -122,18 +123,20 @@
                 <span class="input-group-text">
                     <i class="bi bi-envelope" style="font-size: 1.2rem;"></i>
                 </span>
-                <input type="email" class="form-control" placeholder="Email" @bind-value="@usuario.Email" required>
+                <input type="email" class="form-control" placeholder="Email" @bind-value="@usuario.Email">
             </div>
+            <ValidationMessage For="(() => usuario.Email)" />
 
             <div class="input-group input-group-lg mb-3">
                 <span class="input-group-text">
                     <i class="bi bi-lock" style="font-size: 1.2rem;"></i>
                 </span>
-                <input type="password" class="form-control" placeholder="Contraseña" @bind-value="@usuario.Password" required>
+                <input type="password" class="form-control" placeholder="Contraseña" @bind-value="@usuario.Password">
             </div>
+            <ValidationMessage For="(() => usuario.Password)" />
 
             <!-- Botón de Iniciar Sesión -->
-            <button class="w-100 btn btn-primary btn-lg mt-3" type="submit" disabled="@(procesando == true)">
+            <button type="submit" class="w-100 btn btn-primary btn-lg mt-3" disabled="@(procesando == true)">
                 <i class="bi bi-box-arrow-in-right me-2"></i> Iniciar sesión
             </button>
 

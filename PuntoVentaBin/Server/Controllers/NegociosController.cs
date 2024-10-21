@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using PuntoVentaBin.Shared;
 using PuntoVentaBin.Shared.AccesoDatos;
 using PuntoVentaBin.Shared.Identidades;
-using PuntoVentaBin.Shared.Identidades.Productos;
+
 
 namespace PuntoVentaBin.Server.Controllers
 {
@@ -17,6 +17,30 @@ namespace PuntoVentaBin.Server.Controllers
 		{
 			this.context = context;
 		}
+
+        [HttpGet("{id}")]
+        public async Task<Respuesta<List<Negocio>>> Get(long id)
+        {
+            var respuesta = new Respuesta<List<Negocio>>() { Estado = EstadosDeRespuesta.Correcto};
+
+            try
+            {
+                var usuario = await context.UsuariosBin.FirstOrDefaultAsync(x => x.Id == id);
+
+                respuesta.Datos = await context.Negocios
+                           .Where(x => x.Id == usuario.NegocioId)           
+                           .AsNoTracking()                          
+                           .ToListAsync();
+            }
+            catch (Exception e)
+            {
+                respuesta.Estado = EstadosDeRespuesta.Error;
+                respuesta.Mensaje = e.InnerException.ToString();
+            }
+
+            return respuesta;
+        }
+
 
         [HttpPost]
         [Route("{action}")]
