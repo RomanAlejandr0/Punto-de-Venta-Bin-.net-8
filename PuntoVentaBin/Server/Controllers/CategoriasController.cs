@@ -99,20 +99,19 @@ namespace PuntoVentaBin.Server.Controllers
         [Route("{action}")]
         public async Task<Respuesta<long>> EliminarCategoria([FromBody] Categoria categoria)
         {
-            var respuesta = new Respuesta<long> { Estado = EstadosDeRespuesta.Correcto };
+            var respuesta = new Respuesta<long> { Estado = EstadosDeRespuesta.Correcto, Mensaje = "Categoria eliminada correctamente" };
 
             try
             {
-                context.Database.ExecuteSqlInterpolated($"DELETE FROM CategoriasProductos WHERE Id = {categoria.Id}");
-
                 context.Database.ExecuteSqlInterpolated($"UPDATE Productos SET Categoria = {null} WHERE Categoria = {categoria.Nombre}");
+                context.Database.ExecuteSqlInterpolated($"DELETE FROM ProductoCategorias WHERE Id = {categoria.Id}");
 
                 await context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
                 respuesta.Estado = EstadosDeRespuesta.Error;
-                respuesta.Mensaje = $"Error al eliminar la categoria de base de datos";
+                respuesta.Mensaje = $"Error al eliminar la categoria de base de datos {ex.InnerException.ToString()}";
             }
 
             return respuesta;

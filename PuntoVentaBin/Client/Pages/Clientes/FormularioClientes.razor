@@ -3,10 +3,12 @@
 <h3>Formulario de Clientes</h3>
 
 <EditForm Model="cliente" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator/>
     <div class="row mb-2">
         <div class="col-12 col-md-6">
             <label >Nombre del Cliente</label>
             <InputText class="form-control" @bind-Value="cliente.Nombre" />
+            <ValidationMessage For="(() => cliente.Nombre)"/>
         </div>
     </div>
 

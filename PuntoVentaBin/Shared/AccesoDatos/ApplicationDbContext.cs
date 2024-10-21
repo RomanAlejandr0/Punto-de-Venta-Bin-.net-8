@@ -19,6 +19,7 @@ namespace PuntoVentaBin.Shared.AccesoDatos
         public DbSet<UsuarioBin> UsuariosBin { get; set; }
         public DbSet<Cliente> Clientes { get; set; }
         public DbSet<Provedor> Provedores { get; set; }
+        public DbSet<Empleado> Empleados { get; set; }
         public DbSet<Domicilio> Domicilios { get; set; }
 
 

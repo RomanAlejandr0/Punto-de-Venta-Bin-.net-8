@@ -2,7 +2,7 @@
 @inject IManager manager
 @inject IMostrarMensajes mostrarMensajes
 @inject AuthenticationStateProvider auth
-@attribute [Authorize]
+@attribute [Authorize(Roles = "permisos_propietario")]
 
 <PageTitle>Historial Ventas</PageTitle>
 

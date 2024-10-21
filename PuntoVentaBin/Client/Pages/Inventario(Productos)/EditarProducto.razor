@@ -3,7 +3,7 @@
 @inject NavigationManager navigationManager
 @inject IJSRuntime js
 @inject IMostrarMensajes mostrarMensajes
-@attribute [Authorize]
+@attribute [Authorize(Roles = "permisos_propietario")]
 
 <h5 class="border-start border-2 ps-1 mb-3">Editar Producto</h5>
 

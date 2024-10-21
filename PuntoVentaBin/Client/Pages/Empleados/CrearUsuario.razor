@@ -1,12 +1,12 @@
-﻿@page "/usuarios/crear"
+﻿@* @page "/usuarios/crear" *@
 @inject IManager manager
 @inject IMostrarMensajes mostrarMensajes
 @inject NavigationManager navigationManager
 @inject IJSRuntime js
-@attribute [Authorize]
+@attribute [Authorize(Roles = "permisos_propietario")]
 
 
-<h3>Crear Usuario</h3>
+<h3>Crear Empelado</h3>
 
 <FormularioUsuarios usuario="usuario" OnValidSubmit="Crear" Procesando="procesando"/>
 

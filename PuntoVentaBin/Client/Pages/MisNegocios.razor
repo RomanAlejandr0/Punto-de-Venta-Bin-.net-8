@@ -174,7 +174,7 @@ else
     {
         procesando = true;
 
-        usuarioId = int.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "AuthId").Value);
+        usuarioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "AuthId").Value);
         estadoAutorizacionNegocio = (await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "Autorizacion").Value;
 
         if (estadoAutorizacionNegocio is not null)

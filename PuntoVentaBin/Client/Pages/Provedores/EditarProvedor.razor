@@ -3,7 +3,7 @@
 @inject NavigationManager navigationManager
 @inject IMostrarMensajes mostrarMensajes
 @inject IJSRuntime js
-@attribute [Authorize]
+@attribute [Authorize(Roles = "permisos_propietario")]
 
 <h3>Editar Provedor</h3>
 

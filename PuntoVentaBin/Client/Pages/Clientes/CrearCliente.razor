@@ -4,7 +4,7 @@
 @inject NavigationManager navigationManager
 @inject AuthenticationStateProvider auth
 @inject IJSRuntime js
-@attribute [Authorize]
+@attribute [Authorize(Roles = "permisos_propietario")]
 
 
 <h3>CrearCliente</h3>

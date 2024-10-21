@@ -1,15 +1,15 @@
-﻿@page "/usuarios"
+﻿@page "/empleados"
 @inject IManager manager
 @inject IMostrarMensajes mostrarMensajes
 @inject AuthenticationStateProvider auth
-@attribute [Authorize]
+@attribute [Authorize(Roles = "permisos_propietario")]
 
-<PageTitle>Usuarios</PageTitle>
+<PageTitle>Empleados</PageTitle>
 
 <h5 class="border-start border-2 ps-1">Usuarios</h5>
 <p>
-    Aquí podran crear, editar  y asignarles roles a los Usuarios.
-    (Por el momento la aplicacion solo contara con un usuario unico.)
+    Aquí podran crear, editar  y asignarles roles a los empleados.
+    (Por el momento la aplicacion solo cuenta con un empleado unico, el propio usuario propietario.)
 </p>
 
 <div class="row g-2 mt-5">
@@ -19,29 +19,27 @@
     </div>*@
 </div>
 
-<ListadoGenerico Listado="Usuarios">
+<ListadoGenerico Listado="Empleados">
     <HayRegistros>
         <div class="table-responsive py-3">
             <table class="table table-sm table-bordered table-hover align-middle shadow-sm">
                 <thead>
                     <tr class="table-primary text-center">
-                        <th scope="col">Nombre de Usuario</th>
-                        <th scope="col">Email</th>
+                        <th scope="col">Nombre de Empleado</th>
                         <th scope="col">Rol</th>
                         <th scope="col"></th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var usuario in Usuarios)
+                    @foreach (var empleado in Empleados)
                     {
                         <tr class="bg-white text-center align-middle">
-                            <td scope="row" class="text-start px-3">@usuario.Nombre</td>
-                            <td>@usuario.Email</td>
-                            @* @if (usuario.RolId == 1)
-                            { *@
-                                <td>Administrador</td>
+                            <td scope="row" class="text-start px-3">@empleado.Nombre</td>
+                            @if (empleado.RolId == 1)
+                            {
+                                <td>Propietario</td>
 
-@*                             } *@
+                            }
                             <td class="align-items-center">
                                 @*<div class="row g-1 row-cols-1 row-cols-lg-2">
                             <div class="col-auto">
@@ -65,7 +63,8 @@
 </ListadoGenerico>
 
 @code {
-    public List<UsuarioBin> Usuarios { get; set; }
+    public List<Empleado> Empleados { get; set; }
+    private long usuarioId = new long();
 
     protected override async Task OnInitializedAsync()
     {
@@ -74,23 +73,23 @@
 
     protected async Task Cargar()
     {
-        var EmpresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+        usuarioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "AuthId").Value);
 
-        var respuesta = await manager.Get<List<UsuarioBin>>($"api/usuarios/GetAll/{EmpresaId}");
-        Usuarios = respuesta.Datos;
+        var respuesta = await manager.Get<List<Empleado>>($"api/empleados/{usuarioId}");
+        Empleados = respuesta.Datos;
     }
 
-    protected async Task Borrar(UsuarioBin usuario)
-    {
-        var respuesta = await manager.Post<UsuarioBin, long>($"api/usuarios/EliminarUsuario", usuario);
+    // protected async Task Borrar(UsuarioBin usuario)
+    // {
+    //     var respuesta = await manager.Post<UsuarioBin, long>($"api/usuarios/EliminarUsuario", usuario);
 
-        if (respuesta.Estado == EstadosDeRespuesta.Error)
-        {
-            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
-        }
-        else
-        {
-            await Cargar();
-        }
-    }
+    //     if (respuesta.Estado == EstadosDeRespuesta.Error)
+    //     {
+    //         await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+    //     }
+    //     else
+    //     {
+    //         await Cargar();
+    //     }
+    // }
 }

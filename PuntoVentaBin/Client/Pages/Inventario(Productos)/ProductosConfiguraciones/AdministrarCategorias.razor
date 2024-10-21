@@ -12,10 +12,11 @@ else
 {
     <h5 class="border-start border-2 ps-1">Administrar Categorias</h5>
 
-    <div class="row g-3 mt-1">
+    <button class="btn btn-primary mt-2 mb-4" @onclick="NuevaCategoria" disabled="@(Procesando == true)">Nueva Categoria</button>
+
+    <div class="row g-3">
 
         <div class="col-6">
-            <button class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#edicionCategoria" disabled="@(Procesando == true)">Nueva Categoria</button>
 
             <div class="container-fluid border rounded-start" style="height: 240px; overflow-y: scroll;">
 
@@ -56,14 +57,14 @@ else
                                             <div class="row g-1 row-cols-1 row-cols-lg-2">
 
                                                 <div class="col-auto">
-                                                    <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#edicionCategoria" title="Editar Producto" 
+                                                    <button class="btn btn-sm btn-outline-warning" title="Editar Producto"
                                                             @onclick="@(() => Editar(categoria))" disabled="@(Procesando == true)">
                                                         <i class="bi bi-pen-fill"></i>
                                                     </button>
                                                 </div>
 
                                                 <div class="col-auto">
-                                                    <button class="btn btn-sm btn-outline-danger" @onclick="(() => BorrarCategoria(categoria))" title="Borrar Producto" 
+                                                    <button class="btn btn-sm btn-outline-danger" @onclick="(() => BorrarCategoria(categoria))" title="Borrar Producto"
                                                             disabled="@(Procesando == true)">
                                                         <i class="bi bi-trash3-fill"></i>
                                                     </button>
@@ -80,11 +81,52 @@ else
                 }
             </div>
         </div>
+
+        <div class="col-6">
+            @if (edicion)
+            {
+                <div class=" px-5 border border-3 border-light rounded shadow">
+                    <EditForm Model="categoriaEdicion" OnValidSubmit="GuardarCategoria" class="pt-4 pb-4">
+
+                        <DataAnnotationsValidator />
+                        @if (categoriaEdicion.Id == 0)
+                        {
+                            <h5 class="modal-title" id="edicionCategoriaLabel">Nueva Categoria</h5>
+                        }
+                        else
+                        {
+                            <h5 class="modal-title" id="edicionCategoriaLabel">Editar Categoria</h5>
+                        }
+
+                        <div class="row mt-2 g-0">
+                            <label class="col-3 col-form-label">Categoria:</label>
+
+                            <div class="col-9">
+                                <InputText class="form-control" @bind-Value="categoriaEdicion.Nombre" />
+                                <ValidationMessage For="(() => categoriaEdicion.Nombre)" />
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-3 offset-6 ">
+                                <button type="button" class="btn btn-warning w-100" @onclick="(() => edicion = false)">Cancelar</button>
+                            </div>
+
+                            <div class="col-3">
+                                <button type="submit" class="btn btn-primary w-100" disabled="@(Procesando == true)">
+                                    Guardar
+                                </button>
+                            </div>
+                        </div>
+                    </EditForm>
+                </div>
+            }
+        </div>
     </div>
 }
 
 <!-- Modal -->
-<div class="modal fade" id="edicionCategoria" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="edicionCategoriaLabel" aria-hidden="true">
+@* <div class="modal fade" id="edicionCategoria" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="edicionCategoriaLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -98,32 +140,36 @@ else
                 }
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                
-                <div class="row mt-2 g-0">
-                    <label class="col-3 col-form-label">Categoria:</label>
-                    
-                    <div class="col-9">
-                        <input class="form-control" @bind="categoriaEdicion.Nombre" />
-                    </div>
-                </div>
+            <EditForm Model="categoriaEdicion" OnValidSubmit="GuardarCategoria">
+                <DataAnnotationsValidator/>
+                <div class="modal-body">
+                    <div class="row mt-2 g-0">
+                        <label class="col-3 col-form-label">Categoria:</label>
 
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @onclick="GuardarCategoria" 
-                        disabled="@(Procesando == true)">
-                    Guardar
-                </button>
-            </div>
+                        <div class="col-9">
+                            <InputText class="form-control" @bind-Value="categoriaEdicion.Nombre" />
+                            <ValidationMessage For="(() => categoriaEdicion.Nombre)"/>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" disabled="@(Procesando == true)">
+                        Guardar
+                    </button>
+                </div>
+            </EditForm>
+
         </div>
     </div>
 </div>
-
+ *@
 @code {
     private long empresaId = new long();
     private bool CargandoData = new bool();
     public bool Procesando = false;
+    public bool edicion = false;
 
     private bool categoriasOrdenadasPorNombreAscendente = true;/*A-Z*/
 
@@ -155,6 +201,7 @@ else
     private void NuevaCategoria()
     {
         categoriaEdicion = new Categoria();
+        edicion = true;
     }
 
     private void Editar(Categoria value)
@@ -162,6 +209,8 @@ else
         categoriaEdicion.Id = value.Id;
         categoriaEdicion.NegocioId = value.NegocioId;
         categoriaEdicion.Nombre = value.Nombre;
+
+        edicion = true;
     }
 
     private async Task GuardarCategoria()
@@ -198,7 +247,13 @@ else
                     Categorias.Add(categoriaEdicion);
                 }
 
+                await ComprobarEstatusRespuesta(respuesta.Estado, respuesta.Mensaje);
+
                 categoriaEdicion = new Categoria();
+
+
+                edicion = false;
+
             }
             else
             {
@@ -227,10 +282,11 @@ else
             else
             {
                 Categorias.Remove(categoria);
+                await mostrarMensajes.MostrarMensajeExitoso(respuesta.Mensaje);
             }
 
         }
-        
+
         Procesando = false;
     }
 

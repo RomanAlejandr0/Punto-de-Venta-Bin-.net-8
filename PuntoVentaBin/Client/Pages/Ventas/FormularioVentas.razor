@@ -17,25 +17,27 @@ else
             <div class="input-group input-group-sm shadow-sm">
 
                 <input id="AutocompleteProductos" type="text" @ref="textProductos" class="form-control"
-                       list="opcionesProductos" @bind="PalabraBusqueda" placeholder="Escribe el producto para buscar o lee el codigo"
-                @bind:event="oninput" @onchange="@ColocarProductoEdicion">
+                       list="opcionesProductos" @bind="PalabraBusquedaProductos" placeholder="Escribe el producto para buscar o lee el codigo"
+                       @bind:event="oninput" @onchange="@ColocarProductoEdicion">
+
+
+                <datalist id="opcionesProductos">
+                    @foreach (var item in opcionesProductos)
+                    {
+                        if (item.ToUpper().Contains(PalabraBusquedaProductos.ToUpper()) && PalabraBusquedaProductos.Length >= 1)
+                        {
+                            <option @onclick="() => PalabraBusquedaProductos = item" value="@item" />
+                        }
+                    }
+                </datalist>
+
 
                 <button class="btn btn-outline-secondary" type="button"
-                @onclick="(() => { PalabraBusqueda = string.Empty; producto = new ProductoDTO(); ventaDetalleEdicion = new VentaDetalle();})">
+                        @onclick="(() => { PalabraBusquedaProductos = string.Empty; producto = new ProductoDTO(); ventaDetalleEdicion = new VentaDetalle();})">
                     Limpiar
                 </button>
-
             </div>
 
-            <datalist id="opcionesProductos">
-                @foreach (var item in opciones)
-                {
-                    if (item.ToUpper().Contains(PalabraBusqueda.ToUpper()) && PalabraBusqueda.Length >= 1)
-                    {
-                        <option @onclick="() => PalabraBusqueda = item" value="@item" />
-                    }
-                }
-            </datalist>
         </div>
 
         <div class="col-md-3">
@@ -47,7 +49,7 @@ else
             <div class="input-group input-group-sm">
                 <input id="AutocompleteClientes" type="text" @ref="textClientes" class="form-control"
                        list="opcionesClientes" @bind="PalabraBusquedaClientes" placeholder="Escribe el cliente para buscar"
-                @bind:event="oninput" @onchange="@ColocarClienteEdicion">
+                       @bind:event="oninput" @onchange="@ColocarClienteEdicion">
 
                 <ListaClientes Clientes="ClientesDTOs" ClientesListaCompleta="ClientesDTOs" OnSeleccionarCliente="SeleccionarClienteListaClientes" />
 
@@ -62,7 +64,7 @@ else
                 </datalist>
 
                 <button class="btn btn-outline-secondary" type="button"
-                @onclick="(() => { PalabraBusquedaClientes = string.Empty; cliente = new ClienteDTO(); })">
+                        @onclick="(() => { PalabraBusquedaClientes = string.Empty; cliente = new ClienteDTO(); })">
                     Limpiar
                 </button>
 
@@ -88,7 +90,7 @@ else
                 <span class="input-group-text">Cantidad:</span>
 
                 <input @ref="textCantidad" type="number" class="form-control text-end" aria-label="Cantidad"
-                @bind="@ventaDetalleEdicion.Cantidad" @bind:event="oninput"
+                       @bind="@ventaDetalleEdicion.Cantidad" @bind:event="oninput"
                        min="1" max="@producto.CantidadInventario" disabled="@(producto.CantidadInventario == 0)">
             </div>
         </div>
@@ -122,14 +124,13 @@ else
 
     <ListaCompra @bind-Venta="venta" OnBorrarRenglonVentaDetalle="BorrarRenglonVentaDetalle" />
 
-   <RegionAccionesDeVentaEnFormularioVentas 
-       empresaId="empresaId"                                     
-       usuarioId="usuarioId"                                    
-       @bind-Cliente="cliente"                                    
-       @bind-Venta="venta"                                     
-       Clientes="ClientesDTOs"                                     
-       LimpiarVenta="LimpiarVenta"                                     
-       OnGuardar="GuardarVenta"/>
+    <RegionAccionesDeVentaEnFormularioVentas empresaId="empresaId"
+                                             usuarioId="usuarioId"
+                                             @bind-Cliente="cliente"
+                                             @bind-Venta="venta"
+                                             Clientes="ClientesDTOs"
+                                             LimpiarVenta="LimpiarVenta"
+                                             OnGuardar="GuardarVenta" />
 }
 
 @code {
@@ -139,8 +140,8 @@ else
 
     [Parameter] public Venta venta { get; set; } = new Venta();
 
-    public string PalabraBusqueda { get; set; } = string.Empty;
-    List<string> opciones = new List<string>();
+    public string PalabraBusquedaProductos { get; set; } = string.Empty;
+    List<string> opcionesProductos = new List<string>();
 
     public string PalabraBusquedaClientes { get; set; } = string.Empty;
     List<string> opcionesClientes = new List<string>();
@@ -209,7 +210,7 @@ else
         {
             ProductosDTO = respuesta.Datos;
 
-            opciones = ProductosDTO.Select(p => p.Descripcion).Distinct().ToList();
+            opcionesProductos = ProductosDTO.Select(p => p.Descripcion).Distinct().ToList();
         }
         else
         {
@@ -222,7 +223,7 @@ else
     {
         producto = ProductosDTO.FirstOrDefault(p => p.Id == productoId);
 
-        PalabraBusqueda = producto.Descripcion;
+        PalabraBusquedaProductos = producto.Descripcion;
 
         ventaDetalleEdicion.DescripcionProducto = producto.Descripcion;
         ventaDetalleEdicion.Precio = producto.PrecioVenta;
@@ -262,19 +263,18 @@ else
 
     protected void ColocarProductoEdicion()
     {
-        PalabraBusqueda.Trim();
 
-        if (PalabraBusqueda == "")
+        if (PalabraBusquedaProductos == "")
         {
             return;
         }
-        else if (ProductosDTO.Exists(p => p.Descripcion == PalabraBusqueda || p.CodigoBarras == PalabraBusqueda) == false)
+        else if (ProductosDTO.Exists(p => p.Descripcion == PalabraBusquedaProductos || p.CodigoBarras == PalabraBusquedaProductos) == false)
         {
             return;
         }
-        else if (ProductosDTO.Exists(p => p.Descripcion == PalabraBusqueda || p.CodigoBarras == PalabraBusqueda.Trim()) == true)
+        else if (ProductosDTO.Exists(p => p.Descripcion == PalabraBusquedaProductos || p.CodigoBarras == PalabraBusquedaProductos.Trim()) == true)
         {
-            producto = ProductosDTO.FirstOrDefault(p => p.Descripcion == PalabraBusqueda || p.CodigoBarras == PalabraBusqueda);
+            producto = ProductosDTO.FirstOrDefault(p => p.Descripcion == PalabraBusquedaProductos || p.CodigoBarras == PalabraBusquedaProductos);
 
             ventaDetalleEdicion.DescripcionProducto = producto.Descripcion;
             ventaDetalleEdicion.Precio = producto.PrecioVenta;
@@ -313,12 +313,12 @@ else
 
             producto = new ProductoDTO();
             ventaDetalleEdicion = new VentaDetalle();
-            PalabraBusqueda = string.Empty;
+            PalabraBusquedaProductos = string.Empty;
         });
 
         await tarea;
     }
-    
+
     private async Task BorrarRenglonVentaDetalle(VentaDetalle value)
     {
         ProductosDTO.First(x => x.Id == value.ProductoId).CantidadInventario += value.Cantidad;
@@ -337,7 +337,7 @@ else
                 venta = new Venta() { VentaDetalles = new List<VentaDetalle>() };
                 producto = new ProductoDTO();
                 ventaDetalleEdicion = new VentaDetalle();
-                PalabraBusqueda = string.Empty;
+                PalabraBusquedaProductos = string.Empty;
 
                 cliente = ClientesDTOs.FirstOrDefault(x => x.Nombre == _nombreClienteGenerico);
                 PalabraBusquedaClientes = cliente.Nombre;
@@ -352,12 +352,12 @@ else
             await ComprobarEstatusRespuesta(respuesta.Estado, respuesta.Mensaje);
         }
     }
-    
+
     private async Task LimpiarVenta()
     {
         var tarea = Task.Run(() =>
         {
-            PalabraBusqueda = string.Empty;
+            PalabraBusquedaProductos = string.Empty;
             producto = new ProductoDTO();
             ventaDetalleEdicion = new VentaDetalle();
 

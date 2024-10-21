@@ -25,7 +25,7 @@ namespace PuntoVentaBin.Server.Controllers
 
             try
             {
-                var usuario = await context.UsuariosBin.FirstOrDefaultAsync(x => x.Id == id);
+                var usuario = await context.UsuariosBin.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
 
                 respuesta.Datos = await context.Negocios
                            .Where(x => x.Id == usuario.NegocioId)           

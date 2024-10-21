@@ -3,14 +3,17 @@
 <h3>Formulario de Provedores</h3>
 
 <EditForm Model="provedor" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
     <div class="row mb-2">
         <div class="col-12 col-md-6">
-            <label >Nombre del Cliente</label>
+            <label>Nombre del Cliente</label>
             <InputText class="form-control" @bind-Value="provedor.Nombre" />
+            <ValidationMessage For="(() => provedor.Nombre)" />
         </div>
         <div class="col-12 col-md-6 mb-2">
-            <label >Empresa</label>
+            <label>Empresa</label>
             <InputText class="form-control" @bind-Value="provedor.Empresa" />
+            <ValidationMessage For="(() => provedor.Empresa)" />
         </div>
     </div>
 
@@ -36,12 +39,12 @@
 </EditForm>
 
 @code {
-	[Parameter] public Provedor provedor { get; set; }
+    [Parameter] public Provedor provedor { get; set; }
     [Parameter] public bool Procesando { get; set; }
-	[Parameter] public EventCallback OnValidSubmit { get; set; }
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
 
-	private void Cancelar()
-	{
-		navigationManager.NavigateTo("/provedores");
-	}
+    private void Cancelar()
+    {
+        navigationManager.NavigateTo("/provedores");
+    }
 }

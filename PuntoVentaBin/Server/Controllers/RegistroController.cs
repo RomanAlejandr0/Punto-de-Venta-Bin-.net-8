@@ -71,7 +71,11 @@ namespace PuntoVentaBin.Server.Controllers
 
                     context.UsuariosBin.Add(value);
                     await context.SaveChangesAsync(true);
-                   
+
+                    var empleado = new Empleado { usuarioId = value.Id ,RolId = 1, Nombre= value.Nombre };
+                    context.Empleados.Add(empleado);
+                    await context.SaveChangesAsync(true);
+
 
                     // Enviar correo de confirmación
                     try

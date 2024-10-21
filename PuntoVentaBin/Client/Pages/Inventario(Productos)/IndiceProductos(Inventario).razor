@@ -5,12 +5,12 @@
 @inject IMostrarMensajes mostrarMensajes
 @inject AuthenticationStateProvider auth
 
-@attribute [Authorize]
+@attribute [Authorize(Roles = "permisos_propietario")]
 
 <PageTitle>Productos</PageTitle>
 
-<h5 class="border-start border-2 ps-1">Inventario</h5>
-<p>Aquí podran crear, editar y eliminar productos.</p>
+<h5 class="border-start border-2 ps-1 mt-3">Inventario</h5>
+<p>Aquí podran crear, editar y eliminar productos. <b>Seleccione una categoria para encontrar un producto o utilize la barra de busqueda.</b></p>
 
 
 <div class="row g-2 mt-4">
@@ -93,7 +93,14 @@
                     {
                         <tr class="bg-white text-center align-middle">
                             <td scope="row" class="text-start px-3">@producto.Descripcion</td>
-                            <td>@producto.CantidadInventario</td>
+                            @if (producto.Presentacion == "Unidad")
+                            {
+                                <td>@producto.CantidadInventario.ToString("0")</td>
+                            }
+                            else
+                            {
+                                <td>@producto.CantidadInventario.ToString("0.000")</td>
+                            }
                             <td>@producto.PrecioCompra.ToString("$0.00")</td>
                             <td>@producto.PrecioVenta.ToString("$0.00")</td>
                             <td>@producto.Categoria</td>
@@ -129,7 +136,7 @@
         get { return _palabraBusqueda; }
         set
         {
-           _palabraBusqueda = value;
+            _palabraBusqueda = value;
 
             if (!string.IsNullOrEmpty(_palabraBusqueda))
             {

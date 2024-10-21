@@ -1,10 +1,10 @@
 ﻿@page "/productos/configuraciones"
-@attribute [Authorize]
+@attribute [Authorize(Roles = "permisos_propietario")]
 
 
 <PageTitle>Productos Configuraciones</PageTitle>
 
-<div class="container-fluid border-bottom" style="height: 370px;">
+<div class="container-fluid border-bottom mt-3" style="height: 370px;">
     <AdministrarCategorias />
 </div>
 

@@ -2,7 +2,7 @@
 @inject IManager manager
 @inject IMostrarMensajes mostrarMensajes
 @inject AuthenticationStateProvider auth
-@attribute [Authorize]
+@attribute [Authorize(Roles = "permisos_propietario")]
 
 <PageTitle>Clientes</PageTitle>
 
@@ -13,7 +13,7 @@
     @*Busqueda*@
     <div class="col-3">
         <div class="input-group">
-            <input type="text" class="form-control" list="opciones" @bind="PalabraBusqueda" @bind:event="oninput" 
+            <input type="text" class="form-control" list="opciones" @bind="PalabraBusqueda" @bind:event="oninput"
                    id="DatalistProductos" aria-label="Recipient's username" aria-describedby="button-addon2" placeholder="Escribe para buscar..." />
             <button class="btn btn-outline-secondary" type="button"
                     @onclick="(() => { PalabraBusqueda = string.Empty;})">
@@ -66,16 +66,19 @@
                                 <i class="bi bi-search"></i>
                                 </a>
                                 </div>*@
-                                    <div class="col-auto">
-                                        <a class="btn btn-sm btn-outline-warning" href="/clientes/editar/@cliente.Id" title="Editar Cliente">
-                                            <i class="bi bi-gear-fill"></i>
-                                        </a>
-                                    </div>
-                                    <div class="col-auto">
-                                        <button class="btn btn-sm btn-outline-danger" @onclick="(() => Borrar(cliente))" title="Borrar Cliente">
-                                            <i class="bi bi-trash3-fill"></i>
-                                        </button>
-                                    </div>
+                                    @if (cliente.Nombre != "Cliente Generico")
+                                    {
+                                        <div class="col-auto">
+                                            <a class="btn btn-sm btn-outline-warning" href="/clientes/editar/@cliente.Id" title="Editar Cliente">
+                                                <i class="bi bi-gear-fill"></i>
+                                            </a>
+                                        </div>
+                                        <div class="col-auto">
+                                            <button class="btn btn-sm btn-outline-danger" @onclick="(() => Borrar(cliente))" title="Borrar Cliente">
+                                                <i class="bi bi-trash3-fill"></i>
+                                            </button>
+                                        </div>
+                                    }
                                 </div>
                             </td>
                         </tr>
