@@ -22,5 +22,6 @@ namespace PuntoVentaBin.Shared.Identidades.Productos
 
         //Propiedades que son ignoradas en base de datos:
         //public List<ProductoPaquete> ProductosPaquete { get; set; } = new List<ProductoPaquete>();
+
     }
 }

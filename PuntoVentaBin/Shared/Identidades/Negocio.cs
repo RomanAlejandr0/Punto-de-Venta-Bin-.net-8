@@ -11,7 +11,7 @@ namespace PuntoVentaBin.Shared.Identidades
 
         [Key]
         public long Id { get; set; }
-        
+
         [Required(ErrorMessage = "El Tipo de Negocio es requerido")]
         public string TipoNegocio { get; set; }
 
@@ -25,6 +25,7 @@ namespace PuntoVentaBin.Shared.Identidades
         public DateTime FechaRegistro { get; set; }
 
         public List<Cliente> Clientes { get; set; }
+        public List<UsuariosRolesNegocios> UsuariosRolesNegocios { get; set; }
 
     }
 }

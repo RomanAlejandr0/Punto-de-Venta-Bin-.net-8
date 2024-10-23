@@ -12,7 +12,7 @@
 
     protected async override Task OnInitializedAsync()
     {
-        var usuarioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "AuthId").Value);
+        var usuarioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "UsuarioId").Value);
 
         await EliminarPermisosUsuario(usuarioId);
         

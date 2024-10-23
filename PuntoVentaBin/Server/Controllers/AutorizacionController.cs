@@ -8,6 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using PuntoVentaBin.Shared.AccesoDatos;
 using PuntoVentaBin.Shared.Identidades.Adm_PerfilTareas;
+using System.Diagnostics;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -50,7 +51,7 @@ namespace PuntoVentaBin.Server.Controllers
                 }
                 else
                 {
-                    if (user.Password == usuario.Password.Trim())
+                    if (BCrypt.Net.BCrypt.Verify(usuario.Password.Trim(), user.Password))
                     {
                         // Caso 4: Autenticación exitosa
                         var claims = new List<Claim>
@@ -79,15 +80,16 @@ namespace PuntoVentaBin.Server.Controllers
             return respuesta;
         }
 
-        private UserToken BuildToken(UsuarioBin usuario, List<Claim> claimsAdicionales = null)
+        private UserToken BuildToken(Usuario usuario, List<Claim> claimsAdicionales = null)
         {
             var claims = new List<Claim>()
             {
                 new Claim(JwtRegisteredClaimNames.UniqueName, usuario.Nombre),
                 new Claim(ClaimTypes.Name, usuario.Nombre),
+                new Claim("NombreUsuario", usuario.Nombre),
                 new Claim(ClaimTypes.Email, usuario.Email),
-                new Claim("AuthId", usuario.Id.ToString()),
-                new Claim("EmpresaId", usuario.NegocioId.ToString())
+                new Claim("UsuarioId", usuario.Id.ToString())
+
             };
 
             if (claimsAdicionales != null && claimsAdicionales.Any())
@@ -121,15 +123,6 @@ namespace PuntoVentaBin.Server.Controllers
             var respuesta = new Respuesta<UserToken>() { Datos = new UserToken() };
             try
             {
-                // Obtener el ID del usuario autenticado desde el token
-                //var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "AuthId");
-                //if (userIdClaim == null)
-                //{
-                //    //respuesta.Estado = EstadosDeRespuesta.NoAutorizado;
-                //    respuesta.Estado = EstadosDeRespuesta.Error;
-                //    respuesta.Mensaje = "Usuario no autenticado";
-                //    return respuesta;
-                //}
 
                 var userId = usuarioId;
 
@@ -153,10 +146,10 @@ namespace PuntoVentaBin.Server.Controllers
                     //    return respuesta;
                     //}
 
-                    var permisosPerfil = await (from rp in datos.RolesPermisos
-                                                join p in datos.Permisos on rp.PermisoID equals p.Id
-                                                where rp.RolID == user.RolId
-                                                select p).ToListAsync().ConfigureAwait(false);
+                    //var permisosPerfil = await (from rp in datos.RolesPermisos
+                    //                            join p in datos.Permisos on rp.PermisoID equals p.Id
+                    //                            where rp.RolID == user.RolId
+                    //                            select p).ToListAsync().ConfigureAwait(false);
 
                     var claims = new List<Claim>
                     {
@@ -164,10 +157,10 @@ namespace PuntoVentaBin.Server.Controllers
                     };
 
                     // Agregar los permisos como roles
-                    foreach (var permiso in permisosPerfil)
-                    {
-                        claims.Add(new Claim(ClaimTypes.Role, permiso.Nombre));
-                    }
+                    //foreach (var permiso in permisosPerfil)
+                    //{
+                    //    claims.Add(new Claim(ClaimTypes.Role, permiso.Nombre));
+                    //}
 
                     // Generar un nuevo token JWT con los permisos del negocio
                     respuesta.Datos = BuildToken(user, claims);

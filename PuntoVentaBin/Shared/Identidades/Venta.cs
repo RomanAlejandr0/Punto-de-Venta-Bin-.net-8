@@ -27,5 +27,6 @@ namespace PuntoVentaBin.Shared.Identidades
         public string NombreCliente { get; set; }
         public List<VentaDetalle> VentaDetalles { get; set; } = new List<VentaDetalle>();
         public PedidoExtension PedidoExtension { get; set; }
+
     }
 }

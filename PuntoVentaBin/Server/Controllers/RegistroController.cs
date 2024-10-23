@@ -24,7 +24,7 @@ namespace PuntoVentaBin.Server.Controllers
 
         [HttpPost]
         [Route("{action}")]
-        public async Task<Respuesta<long>> RealizarRegistroUsuario([FromBody] UsuarioBin value)
+        public async Task<Respuesta<long>> RealizarRegistroUsuario([FromBody] Usuario value)
         {
             var respuesta = new Respuesta<long> { Estado = EstadosDeRespuesta.Correcto };
             var transaction = context.Database.BeginTransaction();
@@ -59,8 +59,6 @@ namespace PuntoVentaBin.Server.Controllers
                     value.FechaRegistro = DateTime.Now;
                     value.TokenConfirmacion = Guid.NewGuid().ToString();
                     value.CuentaActivada = false; // La cuenta aún no está activada
-                    value.NegocioId = 1014;
-                    value.RolId = 1;
 
                     if (!TryValidateModel(value))
                     {
@@ -69,11 +67,13 @@ namespace PuntoVentaBin.Server.Controllers
                         return respuesta;
                     }
 
+                    value.Password = BCrypt.Net.BCrypt.HashPassword(value.Password);
+
                     context.UsuariosBin.Add(value);
                     await context.SaveChangesAsync(true);
 
-                    var empleado = new Empleado { usuarioId = value.Id ,RolId = 1, Nombre= value.Nombre };
-                    context.Empleados.Add(empleado);
+                    var usuarioRolNegocio = new UsuariosRolesNegocios { UsuarioId = value.Id, RolId = 1, NegocioId = 1014   };
+                    context.UsuariosRolesNegocios.Add(usuarioRolNegocio);
                     await context.SaveChangesAsync(true);
 
 
@@ -117,8 +117,8 @@ namespace PuntoVentaBin.Server.Controllers
             string subject = "Confirmación de registro";
 
             // Construir la URL de confirmación con el dominio público
-            //string urlConfirmacion = $"{Request.Scheme}://{Request.Host}/api/Registro/ConfirmarCorreo?token={tokenConfirmacion}";
-            string urlConfirmacion = $"http://arturhc-001-site13.atempurl.com/api/Registro/ConfirmarCorreo?token={tokenConfirmacion}";
+            string urlConfirmacion = $"{Request.Scheme}://{Request.Host}/api/Registro/ConfirmarCorreo?token={tokenConfirmacion}";
+            //string urlConfirmacion = $"http://arturhc-001-site13.atempurl.com/api/Registro/ConfirmarCorreo?token={tokenConfirmacion}";
 
             // Cuerpo del correo electrónico
             string body = $"Hola {nombreUsuario},\n\nGracias por registrarte. " +

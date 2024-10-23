@@ -19,11 +19,11 @@ else
 @code {
     [Parameter] public long UsuarioId { get; set; }
     private bool procesando = false;
-    private UsuarioBin usuario;
+    private Usuario usuario;
 
     protected override async Task OnInitializedAsync()
     {
-        var respuesta = await manager.Get<UsuarioBin>($"api/usuarios/{UsuarioId}");
+        var respuesta = await manager.Get<Usuario>($"api/usuarios/{UsuarioId}");
 
         if (respuesta.Estado == EstadosDeRespuesta.Error)
         {
@@ -44,7 +44,7 @@ else
         if (confirmed)
         {
 
-            var respuesta = await manager.Post<UsuarioBin, long>("api/usuarios/EditarUsuario", usuario);
+            var respuesta = await manager.Post<Usuario, long>("api/usuarios/EditarUsuario", usuario);
 
             if (respuesta.Estado == EstadosDeRespuesta.Error)
             {

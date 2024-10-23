@@ -2,24 +2,21 @@
 
 namespace PuntoVentaBin.Shared.Identidades
 {
-    public class UsuarioBin
+    public class Usuario
     {
         [Key]
         public long Id { get; set; }
-        public int RolId { get; set; }
-        public long NegocioId { get; set; }
 
-        [Required(ErrorMessage = "El mombre es obligatorio")]
+        [Required(ErrorMessage = "El nombre es obligatorio")]
         [StringLength(100, ErrorMessage = "Limite de caracteres: 100.")]
         public string Nombre { get; set; }
 
         [Required(ErrorMessage = "El correo electrónico es obligatorio.")]
         [EmailAddress(ErrorMessage = "El formato del correo electrónico no es válido.")]
-        //[RegularExpression(@"[a-zA-Z0-9._%+-]{1,30}@gmail\.com", ErrorMessage = "Formato de correo Gmail es invalido")]
         public string Email { get; set; }
 
         [Required(ErrorMessage = "La contraseña es obligatoria")]
-        [RegularExpression(@"(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,10}",
+        [RegularExpression(@"(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,100}",
         ErrorMessage = "Formato de contraseña invalido")]
         public string Password { get; set; }
 
@@ -29,9 +26,11 @@ namespace PuntoVentaBin.Shared.Identidades
 
         public DateTime FechaRegistro { get; set; }
         public bool CuentaActivada { get; set; } 
-        public string TokenConfirmacion { get; set; }
-        public string TokenRecuperacion { get; set; }
+        public string? TokenConfirmacion { get; set; }
+        public string? TokenRecuperacion { get; set; }
         public DateTime? FechaExpiracionTokenRecuperacion { get; set; }
+
+        public List<UsuariosRolesNegocios> UsuariosRolesNegocios { get; set; }
 
     }
 

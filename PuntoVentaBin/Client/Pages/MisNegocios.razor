@@ -162,7 +162,7 @@ else
     string mensajeLogin = string.Empty;
 
     private long usuarioId = new long();
-    private UsuarioBin usuario = new UsuarioBin();
+    private Usuario usuario = new Usuario();
     private Negocio negocioEdicion = new Negocio();
     private List<Negocio> negocios;
 
@@ -174,7 +174,7 @@ else
     {
         procesando = true;
 
-        usuarioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "AuthId").Value);
+        usuarioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "UsuarioId").Value);
         estadoAutorizacionNegocio = (await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "Autorizacion").Value;
 
         if (estadoAutorizacionNegocio is not null)
@@ -187,15 +187,15 @@ else
 
         procesando = false;
 
-        await CargarNegocio();
+        await CargarNegocios();
 
     }
 
 
-    protected async Task CargarNegocio()
+    protected async Task CargarNegocios()
     {
 
-        var respuesta = await manager.Get<List<Negocio>>($"/Negocios/{usuarioId}");
+        var respuesta = await manager.Get<List<Negocio>>($"/Negocios/GetAll/{usuarioId}");
 
         if (respuesta.Estado == EstadosDeRespuesta.Correcto)
         {

@@ -4,6 +4,9 @@ using PuntoVentaBin.Shared;
 using PuntoVentaBin.Shared.AccesoDatos;
 using PuntoVentaBin.Shared.Identidades;
 using PuntoVentaBin.Shared.Identidades.DTOs;
+using PuntoVentaBin.Shared.LogServices;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace PuntoVentaBin.Server.Controllers
 {
@@ -11,10 +14,12 @@ namespace PuntoVentaBin.Server.Controllers
     [Route("api/[controller]")]
     public class VentasController : ControllerBase
     {
+        private readonly ILogService _logService;
         private readonly ApplicationDbContext context;
 
-        public VentasController(ApplicationDbContext context)
+        public VentasController(ApplicationDbContext context, ILogService logService)
         {
+            _logService = logService;
             this.context = context;
         }
 
@@ -98,7 +103,18 @@ namespace PuntoVentaBin.Server.Controllers
 
                     producto.CantidadInventario -= ventaDetalle.Cantidad;
                     await context.SaveChangesAsync();
+
                 }
+
+                var options = new JsonSerializerOptions
+                {
+                    ReferenceHandler = ReferenceHandler.IgnoreCycles,
+                    WriteIndented = true // Opcional: para una salida más legible
+                };
+
+
+                var ventaSerializada = JsonSerializer.Serialize(venta, options);
+                await _logService.LogAsync("Guardar venta", $"Nuevo venta: {ventaSerializada}", venta.NegocioId);
 
                 //var nombreUsuario = await context.Usuarios.Where(x => x.Id == venta.UsuarioId).Select(x => x.Nombre).FirstOrDefaultAsync();
 

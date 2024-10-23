@@ -18,9 +18,9 @@ namespace PuntoVentaBIN.Server.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<Respuesta<UsuarioBin>> Get(long id)
+        public async Task<Respuesta<Usuario>> Get(long id)
         {
-            var respuesta = new Respuesta<UsuarioBin> { Estado = EstadosDeRespuesta.Correcto };
+            var respuesta = new Respuesta<Usuario> { Estado = EstadosDeRespuesta.Correcto };
 
             try
             {
@@ -38,9 +38,9 @@ namespace PuntoVentaBIN.Server.Controllers
         }
 
         [HttpGet("GetAll/{empresaId}")]
-        public async Task<Respuesta<List<UsuarioBin>>> GetAll(long empresaId)
+        public async Task<Respuesta<List<Usuario>>> GetAll(long empresaId)
         {
-            var respuesta = new Respuesta<List<UsuarioBin>> { Estado = EstadosDeRespuesta.Correcto };
+            var respuesta = new Respuesta<List<Usuario>> { Estado = EstadosDeRespuesta.Correcto };
 
             try
             {
@@ -61,7 +61,7 @@ namespace PuntoVentaBIN.Server.Controllers
 
 
         [HttpPost]
-        public async Task<Respuesta<long>> CrearUsuario(UsuarioBin usuario)
+        public async Task<Respuesta<long>> CrearUsuario(Usuario usuario)
         {
             var respuesta = new Respuesta<long> { Estado = EstadosDeRespuesta.Correcto };
             try
@@ -79,7 +79,7 @@ namespace PuntoVentaBIN.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<Respuesta<long>> EditarUsuario(UsuarioBin usuario)
+        public async Task<Respuesta<long>> EditarUsuario(Usuario usuario)
         {
             var respuesta = new Respuesta<long> { Estado = EstadosDeRespuesta.Correcto };
 
@@ -100,7 +100,7 @@ namespace PuntoVentaBIN.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<Respuesta<long>> EliminarUsuario(UsuarioBin usuario)
+        public async Task<Respuesta<long>> EliminarUsuario(Usuario usuario)
         {
             var respuesta = new Respuesta<long> { Estado = EstadosDeRespuesta.Correcto };
             var _usuario = usuario;

@@ -11,7 +11,7 @@
 <FormularioUsuarios usuario="usuario" OnValidSubmit="Crear" Procesando="procesando"/>
 
 @code {
-    private UsuarioBin usuario = new UsuarioBin();
+    private Usuario usuario = new Usuario();
     private bool procesando = false;
 
     private async Task Crear()
@@ -23,7 +23,7 @@
         if (confirmed)
         {
 
-            var respuesta = await manager.Post<UsuarioBin, long>("api/usuarios/CrearUsuario", usuario);
+            var respuesta = await manager.Post<Usuario, long>("api/usuarios/CrearUsuario", usuario);
 
             if (respuesta.Estado == EstadosDeRespuesta.Error)
             {

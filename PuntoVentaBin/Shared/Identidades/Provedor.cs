@@ -14,5 +14,6 @@ namespace PuntoVentaBin.Shared.Identidades
         public string TelefonoNegocio { get; set; } //TODO: TELEFONO CELULAR Y DE NEGOCIO, COMO PODEMOS ESPECIFICAR??
         public  string TelefonoCelular { get; set; }
         public string CorreoElectronico { get; set;}
+
     }
 }

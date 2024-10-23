@@ -15,7 +15,5 @@ namespace PuntoVentaBin.Shared.Identidades
 
         public List<Venta> Ventas { get; set; }
         
-
-        //asda
     }
 }

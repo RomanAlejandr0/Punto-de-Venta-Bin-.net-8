@@ -61,8 +61,8 @@ public class RecuperacionController : ControllerBase
         string fromPassword = smtpConfig["Password"];
         string subject = "Recuperación de contraseña";
 
-        //string urlRecuperacion = $"{Request.Scheme}://{Request.Host}/restablecer-contraseña?token={tokenRecuperacion}";
-        string urlRecuperacion = $"http://arturhc-001-site13.atempurl.com/restablecer-contraseña?token={tokenRecuperacion}";
+        string urlRecuperacion = $"{Request.Scheme}://{Request.Host}/restablecer-contraseña?token={tokenRecuperacion}";
+        //string urlRecuperacion = $"http://arturhc-001-site13.atempurl.com/restablecer-contraseña?token={tokenRecuperacion}";
 
         string body = $"Hola {nombreUsuario},\n\n" +
                       $"Has solicitado restablecer tu contraseña. Por favor, haz clic en el siguiente enlace para continuar:\n\n" +
@@ -107,9 +107,12 @@ public class RecuperacionController : ControllerBase
             }
 
             // Actualizar la contraseña del usuario
-            usuario.Password = model.NuevaContraseña; // Asegúrate de hashear la contraseña
+            //usuario.Password = model.NuevaContraseña; 
+            usuario.Password = BCrypt.Net.BCrypt.HashPassword(model.NuevaContraseña);
             usuario.TokenRecuperacion = null;
             usuario.FechaExpiracionTokenRecuperacion = null;
+
+            //usuario.Password = BCrypt.Net.BCrypt.HashPassword(usuario.Password);
 
             await context.SaveChangesAsync();
 

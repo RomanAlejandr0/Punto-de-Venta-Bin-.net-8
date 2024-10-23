@@ -9,7 +9,8 @@
 <h5 class="border-start border-2 ps-1">Usuarios</h5>
 <p>
     Aquí podran crear, editar  y asignarles roles a los empleados.
-    (Por el momento la aplicacion solo cuenta con un empleado unico, el propio usuario propietario.)
+    (Por el momento la aplicacion solo cuenta con un empleado unico, el propio usuario propietario.
+    Se esta trabajando en sistema de roles.)
 </p>
 
 <div class="row g-2 mt-5">
@@ -73,7 +74,7 @@
 
     protected async Task Cargar()
     {
-        usuarioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "AuthId").Value);
+        usuarioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "UsuarioId").Value);
 
         var respuesta = await manager.Get<List<Empleado>>($"api/empleados/{usuarioId}");
         Empleados = respuesta.Datos;

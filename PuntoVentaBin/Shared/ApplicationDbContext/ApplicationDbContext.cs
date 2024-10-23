@@ -4,6 +4,7 @@ using PuntoVentaBin.Shared.Identidades.Adm_PerfilTareas;
 using PuntoVentaBin.Shared.Identidades.Pedidos;
 using PuntoVentaBin.Shared.Identidades.Productos;
 using PuntoVentaBin.Shared.Identidades.Catalogos;
+using PuntoVentaBin.Shared.LogServices;
 
 namespace PuntoVentaBin.Shared.AccesoDatos
 {
@@ -16,7 +17,7 @@ namespace PuntoVentaBin.Shared.AccesoDatos
         }
 
         public DbSet<Negocio> Negocios { get; set; }
-        public DbSet<UsuarioBin> UsuariosBin { get; set; }
+        public DbSet<Usuario> UsuariosBin { get; set; }
         public DbSet<Cliente> Clientes { get; set; }
         public DbSet<Provedor> Provedores { get; set; }
         public DbSet<Empleado> Empleados { get; set; }
@@ -49,11 +50,36 @@ namespace PuntoVentaBin.Shared.AccesoDatos
         public DbSet<Rol> Roles { get; set; }
         public DbSet<Permiso> Permisos { get; set; }
         public DbSet<RolPermiso> RolesPermisos { get; set; }
+        public DbSet<UsuariosRolesNegocios> UsuariosRolesNegocios { get; set; }
+
+        public DbSet<Log> TablaLogs { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // Configuración de la clave primaria compuesta para la tabla intermedia
+            modelBuilder.Entity<UsuariosRolesNegocios>()
+                .HasKey(un => new { un.UsuarioId, un.NegocioId, un.RolId });
+
+            // Configuración de la relación con Usuario
+            modelBuilder.Entity<UsuariosRolesNegocios>()
+                .HasOne(un => un.Usuario)
+                .WithMany(u => u.UsuariosRolesNegocios)
+                .HasForeignKey(un => un.UsuarioId);
+
+            // Configuración de la relación con Negocio
+            modelBuilder.Entity<UsuariosRolesNegocios>()
+                .HasOne(un => un.Negocio)
+                .WithMany(n => n.UsuariosRolesNegocios)
+                .HasForeignKey(un => un.NegocioId);
+
+            modelBuilder.Entity<UsuariosRolesNegocios>()
+                .HasOne(un => un.Rol)
+                .WithMany(n => n.UsuariosRolesNegocios)
+                .HasForeignKey(un => un.RolId);
+
 
             modelBuilder.Entity<Cliente>().Ignore(x => x.Ventas);
 
@@ -70,6 +96,8 @@ namespace PuntoVentaBin.Shared.AccesoDatos
             modelBuilder.Entity<CodigosPostales>().Ignore(u => u.Localidad);
             modelBuilder.Entity<CodigosPostales>().Ignore(u => u.Municipio);
             modelBuilder.Entity<CodigosPostales>().Ignore(u => u.Colonias);
+
+
         }
     }
 }

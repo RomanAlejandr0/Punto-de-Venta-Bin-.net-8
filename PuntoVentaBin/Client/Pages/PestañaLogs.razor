@@ -1,0 +1,143 @@
+﻿@page "/logs"
+@using PuntoVentaBin.Shared.LogServices
+@using System.Text.RegularExpressions
+@using System.Text
+
+@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+@inject AuthenticationStateProvider auth
+@attribute [Authorize(Roles = "permisos_propietario")]
+
+
+<h5 class="border-start border-2 ps-1">Registro de movimientos</h5>
+
+<div class="row g-2 mb-5 mt-2">
+    <div class="col-5">
+        <div class="input-group">
+            <span class="input-group-text">Buscar por Fecha:</span>
+            <input type="date" aria-label="Fecha Inicio" class="form-control" @bind="PeriodoFecha.FechaInicio">
+            <input type="date" aria-label="Fecha Fin" class="form-control" @bind="PeriodoFecha.FechaFin" min="@DateTime.Now">
+        </div>
+    </div>
+
+    <div class="col-2">
+        <button class="btn btn-primary w-100" @onclick="@CargarLogs">Buscar</button>
+    </div>
+</div>
+
+
+
+
+<div class="mt-3 container-fluid border rounded-start shadow-sm" style="height: 68vh; overflow: scroll;">
+    @if (Logs == null)
+    {
+        <text>Cargando...</text>
+    }
+    else if (Logs.Count == 0)
+    {
+
+        <p class="p-3">No hay registros para mostrar</p>
+    }
+    else
+    {
+        <div class="table-responsive mt-3">
+            <table class="table table-bordered caption-top text-center">
+                <thead>
+                    <tr class="table-success">
+                        <th>#</th>
+                        <th scope="col">Usuario</th>
+                        <th scope="col">Proceso</th>
+                        <th scope="col">Mensaje</th>
+                        <th scope="col">Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in Logs)
+                    {
+                        <tr>
+                            <td>@(Logs.IndexOf(log) + 1).</td>
+                            <td scope="col" class="text-start">@log.Usuario</td>
+                            <td scope="col">@log.Proceso</td>
+                            <td scope="col">
+                                <button class="btn btn-sm btn-outline-primary" @onclick="(() => mensaje = log.Mensaje)"
+                                        data-bs-toggle="modal" data-bs-target="#miModal">
+                                    Mensaje
+                                </button>
+                            </td>
+                            <td scope="col">@log.Fecha.ToString("dd-MM-yyyy HH:mm:ss")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+    }
+</div>
+
+
+<div class="modal fade" id="miModal" tabindex="-1" aria-labelledby="tituloModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="tituloModal">Título del Modal</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Contenido del modal -->
+                <p>@mensaje</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @onclick="(() => mensaje = string.Empty)">Cerrar</button>
+                @* <button type="button" class="btn btn-primary">Guardar Cambios</button> *@
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@code {
+    private long empresaId = new long();
+    string mensaje = string.Empty;
+
+    private FechaInicioFechaFin PeriodoFecha = new FechaInicioFechaFin() { FechaInicio = DateTime.Now, FechaFin = DateTime.Now };
+
+    public List<Log> Logs { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        empresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+
+        PeriodoFecha.NegocioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+
+        await CargarLogs();
+    }
+
+    protected async Task CargarLogs()
+    {
+        var respuesta = await manager.Post<FechaInicioFechaFin, List<Log>>($"api/logs/GetLogs", PeriodoFecha);
+
+        if (respuesta.Estado == EstadosDeRespuesta.Correcto)
+        {
+            Logs = respuesta.Datos;
+        }
+        else
+        {
+            await ComprobarEstatusRespuesta(respuesta.Estado, respuesta.Mensaje);
+        }
+    }
+
+
+    private async Task ComprobarEstatusRespuesta(EstadosDeRespuesta estadoRespuesta, string mensajeRespuesta)
+    {
+        if (estadoRespuesta == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(mensajeRespuesta);
+        }
+        else if (estadoRespuesta == EstadosDeRespuesta.NoProceso)
+        {
+            await mostrarMensajes.MostrarMensajeError("Peticion No Procesada");
+        }
+    }
+
+}

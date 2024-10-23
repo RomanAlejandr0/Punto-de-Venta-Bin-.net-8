@@ -4,6 +4,8 @@ using PuntoVentaBin.Shared;
 using PuntoVentaBin.Shared.AccesoDatos;
 using PuntoVentaBin.Shared.Identidades.Productos;
 using PuntoVentaBin.Shared.Identidades.DTOs;
+using System.Text.Json;
+using PuntoVentaBin.Shared.LogServices;
 
 namespace PuntoVentaBIN.Server.Controllers
 {
@@ -12,10 +14,14 @@ namespace PuntoVentaBIN.Server.Controllers
     public class ProductosController : ControllerBase
     {
         private readonly ApplicationDbContext context;
+        private readonly ILogService _logService;
 
-        public ProductosController(ApplicationDbContext context)
+
+        public ProductosController(ApplicationDbContext context, ILogService logService)
         {
             this.context = context;
+            _logService = logService;
+
         }
 
         [HttpGet("{id}")]
@@ -126,6 +132,9 @@ namespace PuntoVentaBIN.Server.Controllers
                 await context.SaveChangesAsync();
 
                 respuesta.Datos = producto.Id;
+
+                var objetoSerializado = JsonSerializer.Serialize(producto);
+                await _logService.LogAsync("Guardar Producto", $"Nuevo producto: {objetoSerializado}", producto.NegocioId);
             }
             catch (Exception ex)
             {
@@ -147,11 +156,17 @@ namespace PuntoVentaBIN.Server.Controllers
 
             try
             {
+                var productoAnterior = await context.Productos.AsNoTracking().FirstOrDefaultAsync(x => x.Id == producto.Id);
+                var objetoSerializadoAnterior = JsonSerializer.Serialize(productoAnterior);
+
                 //context.Attach(producto).State = EntityState.Modified;
                 context.Update(producto);
                 await context.SaveChangesAsync();
 
                 respuesta.Datos = producto.Id;
+
+                var objetoSerializado = JsonSerializer.Serialize(producto);
+                await _logService.LogAsync("Editar Producto", $"Producto editado de {objetoSerializadoAnterior} a {objetoSerializado}.", producto.NegocioId);
             }
             catch (Exception ex)
             {
@@ -213,6 +228,9 @@ namespace PuntoVentaBIN.Server.Controllers
                 await context.SaveChangesAsync();
 
                 transaction.Commit();
+
+                var objetoSerializado = JsonSerializer.Serialize(producto);
+                await _logService.LogAsync("Eliminar Producto", $"Producto eliminado {objetoSerializado}.", producto.NegocioId);
             }
             catch (Exception ex)
             {

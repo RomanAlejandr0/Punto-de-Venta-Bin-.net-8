@@ -173,7 +173,7 @@
                         {
                             <i class="bi bi-x-circle-fill me-2"></i>
                         }
-                        <strong>Longitud:</strong> Entre <strong>8 y 10 caracteres</strong>.
+                        <strong>Longitud minima:</strong> De <strong>8 caracteres</strong>.
                     </li>
                     <li class="list-group-item">
                         @if (HasUpperCase)
@@ -252,7 +252,7 @@
 
 @code {
     private bool procesando = false;
-    private UsuarioBin usuario = new UsuarioBin();
+    private Usuario usuario = new Usuario();
     private string cargando = "Cargando...";
 
     private string mensajeRegistro;
@@ -272,7 +272,7 @@
     {
         procesando = true;
 
-        var respuesta = await manager.Post<UsuarioBin, long>("api/registro/RealizarRegistroUsuario", usuario);
+        var respuesta = await manager.Post<Usuario, long>("api/registro/RealizarRegistroUsuario", usuario);
 
         if (respuesta.Estado == EstadosDeRespuesta.Correcto)
         {
@@ -285,7 +285,7 @@
             {
                 mensajeRegistro = "Registro exitoso. Por favor, verifica tu correo electrónico para activar tu cuenta.";
                 await mostrarMensajes.MostrarMensajeExitoso(mensajeRegistro);
-                usuario = new UsuarioBin();
+                usuario = new Usuario();
                 navigate.NavigateTo("/login");
             }
         }

@@ -11,26 +11,26 @@ namespace PuntoVentaBin.Server.Controllers
     [Route("[controller]")]
     public class NegociosController : ControllerBase
     {
-		private readonly ApplicationDbContext context;
+        private readonly ApplicationDbContext context;
 
-		public NegociosController(ApplicationDbContext context)
-		{
-			this.context = context;
-		}
-
-        [HttpGet("{id}")]
-        public async Task<Respuesta<List<Negocio>>> Get(long id)
+        public NegociosController(ApplicationDbContext context)
         {
-            var respuesta = new Respuesta<List<Negocio>>() { Estado = EstadosDeRespuesta.Correcto};
+            this.context = context;
+        }
+
+        [HttpGet("GetAll/{usuarioId}")]
+        public async Task<Respuesta<List<Negocio>>> Get(long usuarioId)
+        {
+            var respuesta = new Respuesta<List<Negocio>>() { Estado = EstadosDeRespuesta.Correcto };
 
             try
             {
-                var usuario = await context.UsuariosBin.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+                respuesta.Datos = await context.UsuariosRolesNegocios
+                       .Where(un => un.UsuarioId == usuarioId)
+                       .Select(un => un.Negocio)
+                       .AsNoTracking()
+                       .ToListAsync();
 
-                respuesta.Datos = await context.Negocios
-                           .Where(x => x.Id == usuario.NegocioId)           
-                           .AsNoTracking()                          
-                           .ToListAsync();
             }
             catch (Exception e)
             {
@@ -55,12 +55,12 @@ namespace PuntoVentaBin.Server.Controllers
 
                 //negocio.Usuarios.Last().RolId = 1;
                 //negocio.Usuarios.Last().FechaRegistro = DateTime.Now;
-                
+
                 negocio.Clientes.Last().Nombre = "Cliente Generico";
                 negocio.Clientes.Last().Email = "";
 
                 context.Negocios.Add(negocio);
-                
+
                 await context.SaveChangesAsync(true);
 
                 respuesta.Datos = negocio.Id;
@@ -76,5 +76,5 @@ namespace PuntoVentaBin.Server.Controllers
             return respuesta;
         }
 
-	}
+    }
 }

@@ -28,13 +28,6 @@
 
             producto.NegocioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
 
-            if (string.IsNullOrEmpty(producto.Descripcion))
-            {
-                await mostrarMensajes.MostrarMensajeError("La descripción del producto no puede estar vacía.");
-                procesando = false;
-                return;
-            }
-
             if (producto.CodigoBarras != null && producto.CodigoBarras != string.Empty)
             {
                 producto.CodigoBarras.Trim();

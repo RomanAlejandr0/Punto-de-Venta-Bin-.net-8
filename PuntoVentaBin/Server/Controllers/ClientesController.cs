@@ -4,6 +4,8 @@ using PuntoVentaBin.Shared.Identidades;
 using PuntoVentaBin.Shared;
 using PuntoVentaBin.Shared.AccesoDatos;
 using PuntoVentaBin.Shared.Identidades.DTOs;
+using PuntoVentaBin.Shared.LogServices;
+using System.Text.Json;
 
 namespace PuntoVentaBin.Server.Controllers
 {
@@ -11,10 +13,12 @@ namespace PuntoVentaBin.Server.Controllers
     [Route("api/[controller]")]
     public class ClientesController : ControllerBase
     {
+        private readonly ILogService _logService;
         private readonly ApplicationDbContext context;
 
-        public ClientesController(ApplicationDbContext context)
+        public ClientesController(ApplicationDbContext context, ILogService logService)
         {
+            _logService = logService;
             this.context = context;
         }
 
@@ -95,6 +99,9 @@ namespace PuntoVentaBin.Server.Controllers
                 context.Add(cliente);
                 await context.SaveChangesAsync();
                 respuesta.Datos = cliente.Id;
+
+                var objetoSerializado = JsonSerializer.Serialize(cliente);
+                await _logService.LogAsync("Guardar Cliente", $"Nuevo cliente: {objetoSerializado}",cliente.NegocioId);
             }
             catch (Exception ex)
             {
@@ -113,9 +120,15 @@ namespace PuntoVentaBin.Server.Controllers
 
             try
             {
+                var registroAnterior = await context.Clientes.AsNoTracking().FirstOrDefaultAsync(x => x.Id == cliente.Id);
+                var objetoSerializadoAnterior = JsonSerializer.Serialize(registroAnterior);
+
                 context.Attach(cliente).State = EntityState.Modified;
                 await context.SaveChangesAsync();
                 respuesta.Datos = cliente.Id;
+
+                var objetoSerializado = JsonSerializer.Serialize(cliente);
+                await _logService.LogAsync("Editar Cliente", $"Provedor cliente de {objetoSerializadoAnterior} a {objetoSerializado}.", cliente.NegocioId);
             }
             catch (Exception ex)
             {
@@ -139,6 +152,9 @@ namespace PuntoVentaBin.Server.Controllers
                     FirstOrDefaultAsync(x => x.Id == cliente.Id);
                 context.Attach(clienteBorrado).State = EntityState.Deleted;
                 await context.SaveChangesAsync();
+
+                var objetoSerializado = JsonSerializer.Serialize(cliente);
+                await _logService.LogAsync("Eliminar Cliente", $"Cliente eliminado {objetoSerializado}.", cliente.NegocioId);
             }
             catch (Exception ex)
             {

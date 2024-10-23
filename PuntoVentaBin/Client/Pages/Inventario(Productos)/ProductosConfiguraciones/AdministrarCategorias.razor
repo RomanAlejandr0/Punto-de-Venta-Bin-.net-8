@@ -167,6 +167,7 @@ else
  *@
 @code {
     private long empresaId = new long();
+    private long usuarioId = new long();
     private bool CargandoData = new bool();
     public bool Procesando = false;
     public bool edicion = false;
@@ -181,6 +182,7 @@ else
         CargandoData = true;
 
         empresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+        usuarioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "UsuarioId").Value);
 
         await CargarCategorias();
 

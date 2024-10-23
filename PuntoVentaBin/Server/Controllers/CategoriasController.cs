@@ -3,6 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using PuntoVentaBin.Shared;
 using PuntoVentaBin.Shared.AccesoDatos;
 using PuntoVentaBin.Shared.Identidades.Productos;
+using PuntoVentaBin.Shared.LogServices;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace PuntoVentaBin.Server.Controllers
 {
@@ -11,10 +14,12 @@ namespace PuntoVentaBin.Server.Controllers
     public class CategoriasController : ControllerBase
     {
         private readonly ApplicationDbContext context;
+        private readonly ILogService _logService;
 
-        public CategoriasController(ApplicationDbContext context)
+        public CategoriasController(ApplicationDbContext context, ILogService logService)
         {
             this.context = context;
+            _logService = logService;
         }
 
         [HttpGet("GetAll/{empresaId}")]
@@ -66,6 +71,9 @@ namespace PuntoVentaBin.Server.Controllers
                 context.Add(categoria);
                 await context.SaveChangesAsync();
                 respuesta.Datos = categoria.Id;
+
+                var objetoSerializado = JsonSerializer.Serialize(categoria);
+                await _logService.LogAsync("Guardar Categoria", $"Nueva categoria: {objetoSerializado}", categoria.NegocioId);
             }
             catch (Exception ex)
             {
@@ -82,9 +90,17 @@ namespace PuntoVentaBin.Server.Controllers
 
             try
             {
+                var categoriaAnterior = await context.ProductoCategorias.AsNoTracking().FirstOrDefaultAsync(x => x.Id == categoria.Id);
+                var objetoSerializadoAnterior = JsonSerializer.Serialize(categoriaAnterior);
+
+
                 context.Attach(categoria).State = EntityState.Modified;
                 await context.SaveChangesAsync();
                 respuesta.Datos = categoria.Id;
+
+                var objetoSerializado = JsonSerializer.Serialize(categoria);
+                await _logService.LogAsync("Editar Categoria", $"Categoria editada de {objetoSerializadoAnterior} a {objetoSerializado}.", categoria.NegocioId);
+
             }
             catch (Exception ex)
             {
@@ -107,15 +123,20 @@ namespace PuntoVentaBin.Server.Controllers
                 context.Database.ExecuteSqlInterpolated($"DELETE FROM ProductoCategorias WHERE Id = {categoria.Id}");
 
                 await context.SaveChangesAsync();
+
+                var objetoSerializado = JsonSerializer.Serialize(categoria);
+                await _logService.LogAsync("Eliminar categoria", $"Categoria Eliminada {objetoSerializado}.", categoria.NegocioId);
             }
             catch (Exception ex)
             {
                 respuesta.Estado = EstadosDeRespuesta.Error;
-                respuesta.Mensaje = $"Error al eliminar la categoria de base de datos {ex.InnerException.ToString()}";
+                respuesta.Mensaje = $"Error al eliminar la categoria de base de datos.";
             }
 
             return respuesta;
         }
+
+       
 
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace PuntoVentaBin.Shared.Identidades.Productos
 {
@@ -10,6 +11,7 @@ namespace PuntoVentaBin.Shared.Identidades.Productos
         
         [Required(ErrorMessage ="El nombre es requerido")]
         public string Nombre { get; set; }
+
 
     }
 }
