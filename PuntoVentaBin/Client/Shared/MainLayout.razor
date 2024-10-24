@@ -2,7 +2,7 @@
 @inject AuthenticationStateProvider auth
 
 <div class="page">
-    <AuthorizeView Roles="permisos_propietario">
+    <AuthorizeView Roles="permisos_propietario, permisos_administrador">
         <Authorized>
             <div class="sidebar">
                 <NavMenu />
@@ -11,7 +11,7 @@
     </AuthorizeView>
 
     <main>
-        <AuthorizeView Roles="permisos_propietario">
+        <AuthorizeView Roles="permisos_propietario, permisos_administrador">
             <Authorized>
                 <div class="top-row px-4">
                     <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>

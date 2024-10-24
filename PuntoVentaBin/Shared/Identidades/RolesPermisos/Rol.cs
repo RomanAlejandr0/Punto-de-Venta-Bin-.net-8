@@ -11,7 +11,7 @@ namespace PuntoVentaBin.Shared.Identidades.Adm_PerfilTareas
         public string Descripcion { get; set; }
         public DateTime Fecha { get; set; }
         public bool Activo { get; set; }
-        public List<UsuariosRolesNegocios> UsuariosRolesNegocios { get; set; }
+        public List<UsuarioRolNegocio> UsuariosRolesNegocios { get; set; }
 
     }
 }

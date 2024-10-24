@@ -2,7 +2,7 @@
 
 namespace PuntoVentaBin.Shared.Identidades
 {
-    public class UsuariosRolesNegocios
+    public class UsuarioRolNegocio
     {
         public long UsuarioId { get; set; }
         public Usuario Usuario { get; set; }

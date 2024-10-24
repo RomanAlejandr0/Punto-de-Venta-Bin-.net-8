@@ -72,7 +72,7 @@ namespace PuntoVentaBin.Server.Controllers
                     context.UsuariosBin.Add(value);
                     await context.SaveChangesAsync(true);
 
-                    var usuarioRolNegocio = new UsuariosRolesNegocios { UsuarioId = value.Id, RolId = 1, NegocioId = 1014   };
+                    var usuarioRolNegocio = new UsuarioRolNegocio { UsuarioId = value.Id, RolId = 1, NegocioId = 1014   };
                     context.UsuariosRolesNegocios.Add(usuarioRolNegocio);
                     await context.SaveChangesAsync(true);
 

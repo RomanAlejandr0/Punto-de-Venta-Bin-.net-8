@@ -6,7 +6,7 @@
 @inject IManager manager
 @inject IMostrarMensajes mostrarMensajes
 @inject AuthenticationStateProvider auth
-@attribute [Authorize(Roles = "permisos_propietario")]
+@attribute [Authorize(Roles = "permisos_propietario, permisos_administrador")]
 
 
 <h5 class="border-start border-2 ps-1">Registro de movimientos</h5>

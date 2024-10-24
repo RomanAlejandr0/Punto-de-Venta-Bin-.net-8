@@ -4,7 +4,7 @@
 @inject NavigationManager navigationManager
 @inject AuthenticationStateProvider auth
 @inject IJSRuntime js
-@attribute [Authorize(Roles = "permisos_propietario")]
+@attribute [Authorize(Roles = "permisos_propietario, permisos_administrador")]
 
 
 <h3>Crear Provedor</h3>

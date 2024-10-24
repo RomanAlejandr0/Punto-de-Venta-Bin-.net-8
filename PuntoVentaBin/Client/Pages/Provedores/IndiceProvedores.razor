@@ -2,7 +2,7 @@
 @inject IManager manager
 @inject IMostrarMensajes mostrarMensajes
 @inject AuthenticationStateProvider auth
-@attribute [Authorize(Roles = "permisos_propietario")]
+@attribute [Authorize(Roles = "permisos_propietario, permisos_administrador")]
 
 <PageTitle>Provedores</PageTitle>
 

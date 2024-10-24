@@ -2,7 +2,7 @@
 @inject IManager manager
 @inject IMostrarMensajes mostrarMensajes
 @inject AuthenticationStateProvider auth
-@attribute [Authorize(Roles = "permisos_propietario")]
+@attribute [Authorize(Roles = "permisos_propietario, permisos_administrador")]
 
 <PageTitle>Empleados</PageTitle>
 
@@ -20,40 +20,49 @@
     </div>*@
 </div>
 
-<ListadoGenerico Listado="Empleados">
+@* <ListadoGenerico Listado="Usuarios">
     <HayRegistros>
         <div class="table-responsive py-3">
             <table class="table table-sm table-bordered table-hover align-middle shadow-sm">
                 <thead>
                     <tr class="table-primary text-center">
-                        <th scope="col">Nombre de Empleado</th>
+                        <th scope="col">Nombre Usuario</th>
+                        <th scope="col">Correo Electronico</th>
                         <th scope="col">Rol</th>
+                        <th scope="col">Permisos</th>
                         <th scope="col"></th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var empleado in Empleados)
+                    @foreach (var usuario in UsuariosConRolId)
                     {
                         <tr class="bg-white text-center align-middle">
-                            <td scope="row" class="text-start px-3">@empleado.Nombre</td>
-                            @if (empleado.RolId == 1)
+                            <td scope="row" class="text-start px-3">@usuario.Usuario.Nombre</td>
+                            <td scope="row" class="text-start px-3">@usuario.Usuario.Email</td>
+                            @if (usuario.RolId == 1)
                             {
                                 <td>Propietario</td>
 
                             }
+                            else if (usuario.RolId == 2)
+                            {
+                                <td>Administrador</td>
+                            }
+                           @*  <td scope="row" class="text-start px-3">
+                                @foreach (var permiso in usuario.Usuario.Permisos)
+                                {
+                                    @permiso
+                                }
+                            </td> 
+
                             <td class="align-items-center">
-                                @*<div class="row g-1 row-cols-1 row-cols-lg-2">
-                            <div class="col-auto">
-                            <a class="btn btn-sm btn-outline-warning" href="/usuarios/editar/@usuario.Id" title="Editar Usuario">
-                            <i class="bi bi-gear-fill"></i>
-                            </a>
-                            </div>
-                            <div class="col-auto">
-                            <button class="btn btn-sm btn-outline-danger" @onclick="(() => Borrar(usuario))" title="Borrar Usuario">
-                            <i class="bi bi-trash3-fill"></i>
-                            </button>
-                            </div>
-                            </div>*@
+                                <div class="row g-1 row-cols-1 row-cols-lg-2">
+                                    <div class="col-auto">
+                                        <button class="btn btn-sm btn-outline-danger" @onclick="(() => Borrar(usuario))" title="Eliminar Usuario">
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </button>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -61,24 +70,24 @@
             </table>
         </div>
     </HayRegistros>
-</ListadoGenerico>
+</ListadoGenerico> *@
 
 @code {
-    public List<Empleado> Empleados { get; set; }
-    private long usuarioId = new long();
+    // public List<UsuarioRolNegocio> UsuariosConRolId { get; set; }
+    // private long usuarioId = new long();
 
-    protected override async Task OnInitializedAsync()
-    {
-        await Cargar();
-    }
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     await Cargar();
+    // }
 
-    protected async Task Cargar()
-    {
-        usuarioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "UsuarioId").Value);
+    // protected async Task Cargar()
+    // {
+    //     usuarioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "UsuarioId").Value);
 
-        var respuesta = await manager.Get<List<Empleado>>($"api/empleados/{usuarioId}");
-        Empleados = respuesta.Datos;
-    }
+    //     var respuesta = await manager.Get<List<UsuarioRolNegocio>>($"api/empleados/{usuarioId}");
+    //     UsuariosConRolId = respuesta.Datos;
+    // }
 
     // protected async Task Borrar(UsuarioBin usuario)
     // {

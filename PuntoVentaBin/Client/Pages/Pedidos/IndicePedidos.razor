@@ -4,7 +4,7 @@
 @inject NavigationManager navigationManager
 @inject AuthenticationStateProvider auth
 
-@attribute [Authorize(Roles = "permisos_propietario")]
+@attribute [Authorize(Roles = "permisos_propietario, permisos_administrador")]
 
 <PageTitle>Pedidos</PageTitle>
 

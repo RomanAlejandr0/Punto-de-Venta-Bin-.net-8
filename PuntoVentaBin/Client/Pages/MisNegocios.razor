@@ -217,7 +217,9 @@ else
     {
         procesando = true;
 
-        var respuesta = await manager.Post<long, UserToken>("api/Autorizacion/SeleccionarNegocio", usuarioId);
+        var usuarioRolNegocio = new UsuarioRolNegocio { UsuarioId = usuarioId, NegocioId = value };
+
+        var respuesta = await manager.Post<UsuarioRolNegocio, UserToken>("api/Autorizacion/SeleccionarNegocio", usuarioRolNegocio);
 
         if (respuesta.Estado == EstadosDeRespuesta.Correcto)
         {

@@ -118,52 +118,50 @@ namespace PuntoVentaBin.Server.Controllers
 
         [HttpPost]
         [Route("{action}")]
-        public async Task<Respuesta<UserToken>> SeleccionarNegocio([FromBody] long usuarioId)
+        public async Task<Respuesta<UserToken>> SeleccionarNegocio([FromBody] UsuarioRolNegocio usuarioRolNegocio)
         {
             var respuesta = new Respuesta<UserToken>() { Datos = new UserToken() };
             try
             {
+                var usuarioId = usuarioRolNegocio.UsuarioId;
+                var negocioId = usuarioRolNegocio.NegocioId;
 
-                var userId = usuarioId;
 
-                // Obtener el usuario desde la base de datos
-                var user = await datos.UsuariosBin.AsNoTracking()
-                    .FirstOrDefaultAsync(u => u.Id == userId)
-                    .ConfigureAwait(false);
+                var rolId = await datos.UsuariosRolesNegocios
+                           .Where(un => un.UsuarioId == usuarioId && un.NegocioId == negocioId)
+                           .Select(un => un.RolId)
+                           .FirstOrDefaultAsync();
 
-                if (user != null)
+                Usuario usuario = new Usuario();
+
+                usuario = await datos.UsuariosBin.AsNoTracking().Where(x => x.Id == usuarioId).FirstOrDefaultAsync();
+
+                if (usuario != null)
                 {
-                    // Verificar que el usuario tiene acceso al negocio seleccionado
-                    //var tieneAcceso = await datos.UsuariosRolesNegocios.AsNoTracking()
-                    //    .AnyAsync(urn => urn.UsuarioId == userId && urn.NegocioId == 1014)
-                    //    .ConfigureAwait(false);
 
-                    //if (!tieneAcceso)
-                    //{
-                    //    //respuesta.Estado = EstadosDeRespuesta.NoAutorizado;
-                    //    respuesta.Estado = EstadosDeRespuesta.Error;
-                    //    respuesta.Mensaje = "No tiene acceso al negocio seleccionado";
-                    //    return respuesta;
-                    //}
+                    var permisosPerfil = await (from ur in datos.UsuariosRolesNegocios
+                                                join rp in datos.RolesPermisos on ur.RolId equals rp.RolID
+                                                join p in datos.Permisos on rp.PermisoID equals p.Id
+                                                where ur.UsuarioId == usuarioId && ur.NegocioId == negocioId
+                                                select p)
+                                   .ToListAsync()
+                                   .ConfigureAwait(false);
 
-                    //var permisosPerfil = await (from rp in datos.RolesPermisos
-                    //                            join p in datos.Permisos on rp.PermisoID equals p.Id
-                    //                            where rp.RolID == user.RolId
-                    //                            select p).ToListAsync().ConfigureAwait(false);
 
                     var claims = new List<Claim>
                     {
-                        new Claim("Autorizacion", "True")
+                        new Claim("Autorizacion", "True"),
+                        new Claim("EmpresaId", negocioId.ToString())
                     };
 
-                    // Agregar los permisos como roles
-                    //foreach (var permiso in permisosPerfil)
-                    //{
-                    //    claims.Add(new Claim(ClaimTypes.Role, permiso.Nombre));
-                    //}
+                    //Agregar los permisos como roles
+                    foreach (var permiso in permisosPerfil)
+                    {
+                        claims.Add(new Claim(ClaimTypes.Role, permiso.Nombre));
+                    }
 
                     // Generar un nuevo token JWT con los permisos del negocio
-                    respuesta.Datos = BuildToken(user, claims);
+                    respuesta.Datos = BuildToken(usuario, claims);
                     respuesta.Estado = EstadosDeRespuesta.Correcto;
                 }
                 else

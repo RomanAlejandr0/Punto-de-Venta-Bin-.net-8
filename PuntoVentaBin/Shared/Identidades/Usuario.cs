@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using PuntoVentaBin.Shared.Identidades.Adm_PerfilTareas;
+using System.ComponentModel.DataAnnotations;
 
 namespace PuntoVentaBin.Shared.Identidades
 {
@@ -30,7 +31,8 @@ namespace PuntoVentaBin.Shared.Identidades
         public string? TokenRecuperacion { get; set; }
         public DateTime? FechaExpiracionTokenRecuperacion { get; set; }
 
-        public List<UsuariosRolesNegocios> UsuariosRolesNegocios { get; set; }
+        public List<UsuarioRolNegocio> UsuariosRolesNegocios { get; set; }
+        public List<Permiso> Permisos { get; set; }
 
     }
 

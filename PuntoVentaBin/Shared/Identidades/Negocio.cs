@@ -25,7 +25,7 @@ namespace PuntoVentaBin.Shared.Identidades
         public DateTime FechaRegistro { get; set; }
 
         public List<Cliente> Clientes { get; set; }
-        public List<UsuariosRolesNegocios> UsuariosRolesNegocios { get; set; }
+        public List<UsuarioRolNegocio> UsuariosRolesNegocios { get; set; }
 
     }
 }
