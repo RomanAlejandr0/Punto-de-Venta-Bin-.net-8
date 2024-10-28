@@ -7,6 +7,6 @@ namespace PuntoVentaBin.Shared.Identidades.DTOs
         public long NegocioId { get; set; }
         public DateTime FechaInicio { get; set; }
         public DateTime FechaFin { get; set; }
-        public List<Venta> Ventas { get; set; }
+        public List<Venta>? Ventas { get; set; }
     }
 }

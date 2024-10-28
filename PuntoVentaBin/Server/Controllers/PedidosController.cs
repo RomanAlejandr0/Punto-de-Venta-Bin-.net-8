@@ -48,7 +48,7 @@ namespace PuntoVentaBIN.Server.Controllers
         }
 
         [HttpGet("GetPedidosActivos")]
-        public async Task<Respuesta<List<Venta>>> GetPedidosActivos(long empresaId)
+        public async Task<Respuesta<List<Venta>>> GetPedidosActivos(long negocioId)
         {
             var respuesta = new Respuesta<List<Venta>> 
                 { Estado = EstadosDeRespuesta.Correcto };

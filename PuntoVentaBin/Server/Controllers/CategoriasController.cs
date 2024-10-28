@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using PuntoVentaBin.Shared;
 using PuntoVentaBin.Shared.AccesoDatos;
+using PuntoVentaBin.Shared.Identidades;
 using PuntoVentaBin.Shared.Identidades.Productos;
 using PuntoVentaBin.Shared.LogServices;
 using System.Text.Json;
@@ -22,15 +23,16 @@ namespace PuntoVentaBin.Server.Controllers
             _logService = logService;
         }
 
-        [HttpGet("GetAll/{empresaId}")]
-        public async Task<Respuesta<List<Categoria>>> GetAll(long empresaId)
+        [HttpGet("GetAll/{negocioId}")]
+        public async Task<Respuesta<List<Categoria>>> GetAll(long negocioId)
         {
             var respuesta = new Respuesta<List<Categoria>> { Estado = EstadosDeRespuesta.Correcto };
 
             try
             {
+
                 respuesta.Datos = await context.ProductoCategorias.
-                    Where(x => x.NegocioId == empresaId).
+                    Where(x => x.NegocioId == negocioId).
                     OrderBy(x => x.Nombre).
                     AsNoTracking().
                     ToListAsync();
@@ -68,6 +70,9 @@ namespace PuntoVentaBin.Server.Controllers
 
             try
             {
+                
+
+
                 context.Add(categoria);
                 await context.SaveChangesAsync();
                 respuesta.Datos = categoria.Id;
@@ -135,8 +140,5 @@ namespace PuntoVentaBin.Server.Controllers
 
             return respuesta;
         }
-
-       
-
     }
 }

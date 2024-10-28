@@ -132,7 +132,7 @@
             <DataAnnotationsValidator />
             <h4>Datos del Usuario</h4>
 
-            <div class="input-group input-group-lg mb-3">
+            <div class="input-group input-group-lg mt-3">
                 <span class="input-group-text">
                     <i class="bi bi-file-person" style="font-size: 1.2rem;"></i>
                 </span>
@@ -142,7 +142,7 @@
 
 
 
-            <div class="input-group input-group-lg mb-3">
+            <div class="input-group input-group-lg mt-3">
                 <span class="input-group-text">
                     <i class="bi bi-envelope" style="font-size: 1.2rem;"></i>
                 </span>
@@ -150,7 +150,7 @@
             </div>
             <ValidationMessage For="(() => usuario.Email)" />
 
-            <div class="input-group input-group-lg mb-3">
+            <div class="input-group input-group-lg mt-3">
                 <span class="input-group-text">
                     <i class="bi bi-lock" style="font-size: 1.2rem;"></i>
                 </span>
@@ -162,7 +162,7 @@
             </div>
             <ValidationMessage For="() => usuario.Password" />
 
-            <div class="password-validation">
+            <div class="password-validation mt-3'">
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
                         @if (IsLengthValid)
@@ -229,6 +229,12 @@
                 </div>
             </div>
 
+
+            <div class="text-center mb-3">
+                <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#infoHashModal">
+                    ¿Cómo se almacena tu contraseña?
+                </button>
+            </div>
             @if (procesando == true)
             {
                 <div class="text-center mt-3">
@@ -242,11 +248,35 @@
 
         @if (!string.IsNullOrEmpty(mensajeRegistro))
         {
+
             <div class="alert alert-info mt-3 text-center" role="alert">
                 @mensajeRegistro
             </div>
         }
     </main>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="infoHashModal" tabindex="-1" aria-labelledby="infoHashModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="infoHashModalLabel">Como protegemos tu Contraseña</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                Para garantizar la seguridad de tus contraseñas, utilizamos una técnica llamada salting,
+                que añade un valor único y aleatorio a tu contraseña antes de convertirla en un formato
+                irreconocible mediante un algoritmo de hash seguro como BCrypt. Esto asegura que tus
+                contraseñas estén protegidas contra intentos de descifrado y ataques de fuerza bruta,
+                manteniendo tus datos seguros.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 
@@ -311,17 +341,30 @@
     }
 
 
-    private bool IsLengthValid => !string.IsNullOrEmpty(usuario.Password) && usuario.Password.Length >= 8 && usuario.Password.Length <= 10;
-    private bool HasUpperCase => !string.IsNullOrEmpty(usuario.Password) && usuario.Password.Any(char.IsUpper);
-    private bool HasLowerCase => !string.IsNullOrEmpty(usuario.Password) && usuario.Password.Any(char.IsLower);
-    private bool HasNumber => !string.IsNullOrEmpty(usuario.Password) && usuario.Password.Any(char.IsDigit);
-    private bool IsPasswordValid => IsLengthValid && HasUpperCase && HasLowerCase && HasNumber;
+    // private bool IsLengthValid => !string.IsNullOrEmpty(usuario.Password) && usuario.Password.Length >= 8;
+    // private bool HasUpperCase => !string.IsNullOrEmpty(usuario.Password) && usuario.Password.Any(char.IsUpper);
+    // private bool HasLowerCase => !string.IsNullOrEmpty(usuario.Password) && usuario.Password.Any(char.IsLower);
+    // private bool HasNumber => !string.IsNullOrEmpty(usuario.Password) && usuario.Password.Any(char.IsDigit);
+    // private bool IsPasswordValid => IsLengthValid && HasUpperCase && HasLowerCase && HasNumber;
+
+
+    private bool IsLengthValid;
+    private bool HasUpperCase;
+    private bool HasLowerCase;
+    private bool HasNumber;
+    private bool IsPasswordValid;
+
 
     private void ValidatePassword(ChangeEventArgs e)
     {
-        //     Este método se invoca en cada entrada del usuario.
-        //     Las propiedades calculadas se actualizarán automáticamente.
-        //     Puedes forzar una actualización del estado si es necesario.
+        var _password = e.Value.ToString();
+
+        IsLengthValid = !string.IsNullOrEmpty(_password) && _password.Length >= 8;
+        HasLowerCase = !string.IsNullOrEmpty(_password) && _password.Any(char.IsLower);
+        HasUpperCase = !string.IsNullOrEmpty(_password) && _password.Any(char.IsUpper);
+        HasNumber = !string.IsNullOrEmpty(_password) && _password.Any(char.IsDigit);
+        IsPasswordValid = IsLengthValid && HasUpperCase && HasLowerCase && HasNumber;
+
         StateHasChanged();
     }
 }

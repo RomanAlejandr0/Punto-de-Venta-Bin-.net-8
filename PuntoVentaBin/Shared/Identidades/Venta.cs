@@ -20,7 +20,7 @@ namespace PuntoVentaBin.Shared.Identidades
         public DateTime FechaHoraVenta { get; set; }
         public decimal Subtotal { get; set; }
         public decimal Total { get; set; }
-        public bool EsPedido { get; set; } = false;
+        public bool? EsPedido { get; set; } = false;
 
 
         //Propiedades que son ignoradas en base de datos:

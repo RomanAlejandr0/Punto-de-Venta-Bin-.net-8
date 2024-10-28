@@ -41,15 +41,15 @@ namespace PuntoVentaBin.Server.Controllers
             return respuesta;
         }
         
-        [HttpGet("GetAll/{empresaId}")]
-        public async Task<Respuesta<List<Cliente>>> GetAll(long empresaId)
+        [HttpGet("GetAll/{negocioId}")]
+        public async Task<Respuesta<List<Cliente>>> GetAll(long negocioId)
         {
             var respuesta = new Respuesta<List<Cliente>> { Estado = EstadosDeRespuesta.Correcto };
 
             try
             {
                 respuesta.Datos = await context.Clientes.
-                    Where(x => x.NegocioId == empresaId).
+                    Where(x => x.NegocioId == negocioId).
                     OrderBy(x => x.Nombre).
                     ToListAsync();
             }
@@ -62,15 +62,15 @@ namespace PuntoVentaBin.Server.Controllers
             return respuesta;
         }
 
-        [HttpGet("GetClientesDTOs/{empresaId}")]
-        public async Task<Respuesta<List<ClienteDTO>>> GetClientesDTOs(long empresaId)
+        [HttpGet("GetClientesDTOs/{negocioId}")]
+        public async Task<Respuesta<List<ClienteDTO>>> GetClientesDTOs(long negocioId)
         {
             var respuesta = new Respuesta<List<ClienteDTO>> { Estado = EstadosDeRespuesta.Correcto };
 
             try
             {
                 respuesta.Datos = await context.Clientes.
-                    Where(x => x.NegocioId == empresaId).
+                    Where(x => x.NegocioId == negocioId).
                     Select(a => new ClienteDTO
                     {
                         Id = a.Id,
@@ -106,7 +106,7 @@ namespace PuntoVentaBin.Server.Controllers
             catch (Exception ex)
             {
                 respuesta.Estado = EstadosDeRespuesta.Error;
-                respuesta.Mensaje = $"Error al guardar el c;iente {cliente.Nombre}";
+                respuesta.Mensaje = $"Error al guardar el cliente {cliente.Nombre}";
             }
 
             return respuesta;
@@ -133,12 +133,11 @@ namespace PuntoVentaBin.Server.Controllers
             catch (Exception ex)
             {
                 respuesta.Estado = EstadosDeRespuesta.Error;
-                respuesta.Mensaje = $"Error al guardar al actualizar el c;iente {cliente.Nombre}";
+                respuesta.Mensaje = $"Error al guardar al actualizar el cliente {cliente.Nombre}";
             }
 
             return respuesta;
         }
-
 
         [HttpPost]
         [Route("{action}")]
@@ -159,7 +158,7 @@ namespace PuntoVentaBin.Server.Controllers
             catch (Exception ex)
             {
                 respuesta.Estado = EstadosDeRespuesta.Error;
-                respuesta.Mensaje = $"Error al guardar al eliminar el usuario el usuario";
+                respuesta.Mensaje = $"Error al guardar al eliminar el usuario el cliente {cliente.Nombre}";
             }
 
             return respuesta;

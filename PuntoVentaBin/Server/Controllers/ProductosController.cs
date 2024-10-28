@@ -51,8 +51,8 @@ namespace PuntoVentaBIN.Server.Controllers
             return respuesta;
         }
 
-        [HttpGet("GetAll/{empresaId}")]
-        public async Task<Respuesta<List<Producto>>> GetAll(long empresaId)
+        [HttpGet("GetAll/{negocioId}")]
+        public async Task<Respuesta<List<Producto>>> GetAll(long negocioId)
         {
             var respuesta = new Respuesta<List<Producto>>
             {
@@ -65,7 +65,7 @@ namespace PuntoVentaBIN.Server.Controllers
                 var productos = await context.Productos.
                     //Include(x => x.ProductosPaquete).
                     AsNoTracking().
-                    Where(x => x.NegocioId == empresaId).
+                    Where(x => x.NegocioId == negocioId).
                     OrderBy(x => x.Descripcion).
                     ToListAsync().
                     ConfigureAwait(false);
@@ -81,8 +81,8 @@ namespace PuntoVentaBIN.Server.Controllers
             return respuesta;
         }
 
-        [HttpGet("GetProductosDTOs/{empresaId}")]
-        public async Task<Respuesta<List<ProductoDTO>>> GetProductosDTOs(long empresaId)
+        [HttpGet("GetProductosDTOs/{negocioId}")]
+        public async Task<Respuesta<List<ProductoDTO>>> GetProductosDTOs(long negocioId)
         {
             var respuesta = new Respuesta<List<ProductoDTO>>
             {
@@ -93,7 +93,7 @@ namespace PuntoVentaBIN.Server.Controllers
             try
             {
                 var productosDTO = await context.Productos.
-                    Where(x => x.NegocioId == empresaId).
+                    Where(x => x.NegocioId == negocioId).
                     Select(a => new ProductoDTO
                     {
                         Id = a.Id,

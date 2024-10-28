@@ -1,26 +1,28 @@
 ﻿@page "/empleados"
+@using PuntoVentaBin.Shared.Identidades.Adm_PerfilTareas
 @inject IManager manager
+@inject IJSRuntime js
 @inject IMostrarMensajes mostrarMensajes
 @inject AuthenticationStateProvider auth
 @attribute [Authorize(Roles = "permisos_propietario, permisos_administrador")]
 
-<PageTitle>Empleados</PageTitle>
+<PageTitle>Usuarios (Empleados)</PageTitle>
 
-<h5 class="border-start border-2 ps-1">Usuarios</h5>
+<h5 class="border-start border-2 ps-1 mt-3">Usuarios</h5>
 <p>
-    Aquí podran crear, editar  y asignarles roles a los empleados.
-    (Por el momento la aplicacion solo cuenta con un empleado unico, el propio usuario propietario.
-    Se esta trabajando en sistema de roles.)
+    Aquí podran invitar, asignarles roles y eliminar los usuarios relacionados con la aplicacion.
 </p>
 
 <div class="row g-2 mt-5">
-    @*
+
     <div class="col-auto">
-    <a class="btn btn-primary" href="/usuarios/crear">Nuevo Usuario</a>
-    </div>*@
+        <a class="btn btn-primary" @onclick="(() => usuarioConNegocioPorAsignar = new UsuarioConNegocioPorAsignar())" data-bs-toggle="modal" data-bs-target="#modalNuevoUsuarioConNegocioPorAsignar">
+            Nuevo Usuario
+        </a>
+    </div>
 </div>
 
-@* <ListadoGenerico Listado="Usuarios">
+<ListadoGenerico Listado="Usuarios">
     <HayRegistros>
         <div class="table-responsive py-3">
             <table class="table table-sm table-bordered table-hover align-middle shadow-sm">
@@ -34,7 +36,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var usuario in UsuariosConRolId)
+                    @foreach (var usuario in Usuarios.OrderBy(x => x.RolId))
                     {
                         <tr class="bg-white text-center align-middle">
                             <td scope="row" class="text-start px-3">@usuario.Usuario.Nombre</td>
@@ -48,58 +50,275 @@
                             {
                                 <td>Administrador</td>
                             }
-                           @*  <td scope="row" class="text-start px-3">
-                                @foreach (var permiso in usuario.Usuario.Permisos)
-                                {
-                                    @permiso
-                                }
-                            </td> 
-
-                            <td class="align-items-center">
-                                <div class="row g-1 row-cols-1 row-cols-lg-2">
-                                    <div class="col-auto">
-                                        <button class="btn btn-sm btn-outline-danger" @onclick="(() => Borrar(usuario))" title="Eliminar Usuario">
-                                            <i class="bi bi-trash3-fill"></i>
-                                        </button>
-                                    </div>
-                                </div>
+                            <td scope="row" clas="px-3">
+                                <button class="btn btn-sm btn-outline-primary" @onclick="(() => BuscarPermisosUsuario(usuario.RolId))"
+                                        data-bs-toggle="modal" data-bs-target="#modalDetallesPermisos">
+                                    Ver Permisos
+                                </button>
                             </td>
+                            @if (usuarioRolId == 1 && usuario.RolId != usuarioRolId)
+                            {
+
+                                <td>
+                                    <div class="row g-1 row-cols-1 row-cols-lg-2">
+                                        <div class="col-auto">
+                                            <a class="btn btn-sm btn-outline-warning" @onclick="(() => usuarioEdicion = usuario)"
+                                               data-bs-toggle="modal" data-bs-target="#modalEditarUsuario" title="Editar rol usuario">
+                                                <i class="bi bi-gear-fill"></i>
+                                            </a>
+                                        </div>
+                                        <div class="col-auto">
+                                            <button class="btn btn-sm btn-outline-danger" @onclick="(() => Borrar(usuario))" title="Elminar usuario del negocio">
+                                                <i class="bi bi-trash3-fill"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </td>
+
+                            }
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
     </HayRegistros>
-</ListadoGenerico> *@
+</ListadoGenerico>
+
+
+<div class="modal fade" id="modalDetallesPermisos" tabindex="-1" aria-labelledby="tituloModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="tituloModal">Permisos</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive py-3">
+                    <table class="table table-sm table-bordered table-hover align-middle shadow-sm">
+                        <thead>
+                            <tr class="table-primary text-center">
+                                <th scope="col">Permiso</th>
+                                <th scope="col">Descripcion</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var permiso in Permisos)
+                            {
+                                <tr class="bg-white text-center align-middle">
+                                    <td>@permiso.Nombre</td>
+                                    <td>@permiso.Descripcion</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @onclick="(() => Permisos = new List<Permiso>())">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNuevoUsuarioConNegocioPorAsignar" tabindex="-1" aria-labelledby="tituloModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="tituloModal">Nuevo Usuario</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Si el usuario ya se registro como un usuario en la aplicacion se le asociara automaticamente a este
+                    negocio, si no la relacion no se creara hasta que se registre.
+                </p>
+
+                <EditForm Model="usuarioConNegocioPorAsignar" OnInvalidSubmit="VincularUsuarioConNegocio">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label class="form-label">Correo:</label>
+                        <InputText type="email" class="form-control" @bind-Value="usuarioConNegocioPorAsignar.Email"/>
+                        <ValidationMessage For="(() => usuarioConNegocioPorAsignar.Email)" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Rol:</label>
+                        <select class="form-select" @bind="rolIdFormulario">
+                            <option value="1">Administrador</option>
+                        </select>
+                    </div>
+                </EditForm>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @onclick="(() => Permisos = new List<Permiso>())">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalEditarUsuario" tabindex="-1" aria-labelledby="tituloModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="tituloModal">Nuevo Usuario</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Si el usuario ya se registro como un usuario en la aplicacion se le asociara automaticamente a este
+                    negocio, si no la relacion no se creara hasta que se registre.
+                </p>
+                <div class="mb-3">
+                    <label class="form-label">Nombre:</label>
+                    <input type="text" class="form-control" @bind="usuarioEdicion.Usuario.Nombre" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Correo:</label>
+                    <input type="email" class="form-control" @bind="usuarioEdicion.Usuario.Email" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Rol:</label>
+                    <select class="form-select" @bind="usuarioEdicion.RolId">
+                        <option value="1">Administrador</option>
+                    </select>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Guardar cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 @code {
-    // public List<UsuarioRolNegocio> UsuariosConRolId { get; set; }
-    // private long usuarioId = new long();
+    private long negocioId = new long();
+    private long usuarioRolId = new long();
+    private long usuarioId = new long();
 
-    // protected override async Task OnInitializedAsync()
-    // {
-    //     await Cargar();
-    // }
+    private string rolIdFormulario { get; set; }
 
-    // protected async Task Cargar()
-    // {
-    //     usuarioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "UsuarioId").Value);
 
-    //     var respuesta = await manager.Get<List<UsuarioRolNegocio>>($"api/empleados/{usuarioId}");
-    //     UsuariosConRolId = respuesta.Datos;
-    // }
+    private List<Permiso> Permisos = new List<Permiso>();
+    public UsuarioRolNegocio usuarioEdicion = new UsuarioRolNegocio();
+    public List<UsuarioRolNegocio> Usuarios { get; set; }
+    public UsuarioConNegocioPorAsignar usuarioConNegocioPorAsignar = new UsuarioConNegocioPorAsignar();
 
-    // protected async Task Borrar(UsuarioBin usuario)
-    // {
-    //     var respuesta = await manager.Post<UsuarioBin, long>($"api/usuarios/EliminarUsuario", usuario);
+    protected override async Task OnInitializedAsync()
+    {
+        negocioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "NegocioId").Value);
+        usuarioRolId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "RolId").Value);
+        usuarioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "UsuarioId").Value);
 
-    //     if (respuesta.Estado == EstadosDeRespuesta.Error)
-    //     {
-    //         await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
-    //     }
-    //     else
-    //     {
-    //         await Cargar();
-    //     }
-    // }
+        if (negocioId == 1014)
+        {
+            await mostrarMensajes.MostrarMensajeInformacion("Por motivos de seguridad no se muestra la informacion de los usuarios relacionados al negocio Demo");
+            Usuarios = new List<UsuarioRolNegocio>();
+        }
+        else
+        {
+            await CargarEmpleados();
+        }
+
+
+    }
+
+    protected async Task CargarEmpleados()
+    {
+
+        var respuesta = await manager.Get<List<UsuarioRolNegocio>>($"api/empleados/{negocioId}");
+
+        if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            Usuarios = respuesta.Datos;
+        }
+    }
+
+    protected async Task EditarRolEmpleado()
+    {
+
+        // var respuesta = await manager.Post<UsuarioRolNegocio, long>($"api/empleados/EditarRolEmpleado", usuario);
+
+        // if (respuesta.Estado == EstadosDeRespuesta.Error)
+        // {
+        //     await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        // }
+        // else
+        // {
+        //     Usuarios = respuesta.Datos;
+        // }
+    }
+
+    protected async Task Borrar(UsuarioRolNegocio usuario)
+    {
+        bool confirmed = await js.Confirm("¿Eliminar el usuario del negocio?");
+
+        if (confirmed)
+        {
+            usuario.NegocioId = negocioId;
+
+            var respuesta = await manager.Post<UsuarioRolNegocio, long>($"api/empleados/EliminarUsuarioDelNegocio", usuario);
+
+            if (respuesta.Estado == EstadosDeRespuesta.Correcto)
+            {
+                Usuarios.Remove(usuario);
+            }
+            else
+            {
+                await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+            }
+        }
+
+    }
+
+    protected async Task BuscarPermisosUsuario(long RolId)
+    {
+        var respuesta = await manager.Get<List<Permiso>>($"api/empleados/GetPermisos/{RolId}");
+
+        if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            Permisos = respuesta.Datos;
+        }
+    }
+
+    protected async Task VincularUsuarioConNegocio()
+    {
+
+        usuarioConNegocioPorAsignar.RolId = int.Parse(rolIdFormulario);
+        usuarioConNegocioPorAsignar.NegocioId = negocioId;
+
+        var respuesta = await manager.Post<UsuarioConNegocioPorAsignar, long>($"api/empleados/VincularUsuarioConNegocio", usuarioConNegocioPorAsignar);
+
+        if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeInformacion(respuesta.Mensaje);
+        }
+        else if (true)
+        {
+            if (respuesta.Datos != 0)
+            {
+                await mostrarMensajes.MostrarMensajeExitoso(respuesta.Mensaje);
+                await CargarEmpleados();
+            }
+            else
+            {
+                await mostrarMensajes.MostrarMensajeExitoso(respuesta.Mensaje);
+            }
+        }
+    }
 }

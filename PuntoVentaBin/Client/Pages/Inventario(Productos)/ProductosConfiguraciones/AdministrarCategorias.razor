@@ -166,7 +166,7 @@ else
 </div>
  *@
 @code {
-    private long empresaId = new long();
+    private long negocioId = new long();
     private long usuarioId = new long();
     private bool CargandoData = new bool();
     public bool Procesando = false;
@@ -181,7 +181,7 @@ else
     {
         CargandoData = true;
 
-        empresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+        negocioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "NegocioId").Value);
         usuarioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "UsuarioId").Value);
 
         await CargarCategorias();
@@ -191,7 +191,7 @@ else
 
     protected async Task CargarCategorias()
     {
-        var respuesta = await manager.Get<List<Categoria>>($"Categorias/GetAll/{empresaId}");
+        var respuesta = await manager.Get<List<Categoria>>($"Categorias/GetAll/{negocioId}");
         if (respuesta.Estado == EstadosDeRespuesta.Correcto)
         {
             Categorias = respuesta.Datos;
@@ -217,7 +217,7 @@ else
 
     private async Task GuardarCategoria()
     {
-        categoriaEdicion.NegocioId = empresaId;
+        categoriaEdicion.NegocioId = negocioId;
 
         if (categoriaEdicion.Id == 0 && Categorias.Exists(x => x.Nombre.Trim().ToUpper() == categoriaEdicion.Nombre.Trim().ToUpper()))
         {

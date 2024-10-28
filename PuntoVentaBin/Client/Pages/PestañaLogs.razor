@@ -97,7 +97,7 @@
 
 
 @code {
-    private long empresaId = new long();
+    private long negocioId = new long();
     string mensaje = string.Empty;
 
     private FechaInicioFechaFin PeriodoFecha = new FechaInicioFechaFin() { FechaInicio = DateTime.Now, FechaFin = DateTime.Now };
@@ -106,9 +106,9 @@
 
     protected override async Task OnInitializedAsync()
     {
-        empresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+        negocioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "NegocioId").Value);
 
-        PeriodoFecha.NegocioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+        PeriodoFecha.NegocioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "NegocioId").Value);
 
         await CargarLogs();
     }

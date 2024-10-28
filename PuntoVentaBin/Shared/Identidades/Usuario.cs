@@ -32,7 +32,6 @@ namespace PuntoVentaBin.Shared.Identidades
         public DateTime? FechaExpiracionTokenRecuperacion { get; set; }
 
         public List<UsuarioRolNegocio> UsuariosRolesNegocios { get; set; }
-        public List<Permiso> Permisos { get; set; }
 
     }
 

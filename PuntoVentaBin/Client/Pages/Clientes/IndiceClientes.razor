@@ -105,9 +105,9 @@
 
     protected async Task Cargar()
     {
-        var EmpresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+        var negocioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "NegocioId").Value);
 
-        var respuesta = await manager.Get<List<Cliente>>($"api/clientes/GetAll/{EmpresaId}");
+        var respuesta = await manager.Get<List<Cliente>>($"api/clientes/GetAll/{negocioId}");
 
         if (respuesta.Estado == EstadosDeRespuesta.Error)
         {

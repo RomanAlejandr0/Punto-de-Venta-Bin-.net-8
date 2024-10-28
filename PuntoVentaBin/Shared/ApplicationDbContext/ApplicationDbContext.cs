@@ -5,6 +5,7 @@ using PuntoVentaBin.Shared.Identidades.Pedidos;
 using PuntoVentaBin.Shared.Identidades.Productos;
 using PuntoVentaBin.Shared.Identidades.Catalogos;
 using PuntoVentaBin.Shared.LogServices;
+using PuntoVentaBin.Shared.Identidades.DTOs;
 
 namespace PuntoVentaBin.Shared.AccesoDatos
 {
@@ -53,6 +54,8 @@ namespace PuntoVentaBin.Shared.AccesoDatos
         public DbSet<UsuarioRolNegocio> UsuariosRolesNegocios { get; set; }
 
         public DbSet<Log> TablaLogs { get; set; }
+        public DbSet<ErrorLog> TablaErroresLogs { get; set; }
+        public DbSet<UsuarioConNegocioPorAsignar> UsuariosConNegociosPorAsignar { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -79,6 +82,11 @@ namespace PuntoVentaBin.Shared.AccesoDatos
                 .HasOne(un => un.Rol)
                 .WithMany(n => n.UsuariosRolesNegocios)
                 .HasForeignKey(un => un.RolId);
+
+
+
+            modelBuilder.Entity<UsuarioConNegocioPorAsignar>()
+                .HasKey(un => new { un.Email, un.NegocioId, un.RolId });
 
 
             modelBuilder.Entity<Cliente>().Ignore(x => x.Ventas);

@@ -26,7 +26,7 @@
         if (confirmed)
         {
 
-            producto.NegocioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+            producto.NegocioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "NegocioId").Value);
 
             if (producto.CodigoBarras != null && producto.CodigoBarras != string.Empty)
             {

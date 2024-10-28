@@ -124,7 +124,7 @@ else
 
     <ListaCompra @bind-Venta="venta" OnBorrarRenglonVentaDetalle="BorrarRenglonVentaDetalle" />
 
-    <RegionAccionesDeVentaEnFormularioVentas empresaId="empresaId"
+    <RegionAccionesDeVentaEnFormularioVentas negocioId="negocioId"
                                              usuarioId="usuarioId"
                                              @bind-Cliente="cliente"
                                              @bind-Venta="venta"
@@ -151,7 +151,7 @@ else
     ElementReference textCantidad;
     ElementReference btnAgregar;
 
-    private long empresaId = new long();
+    private long negocioId = new long();
     private long usuarioId = new long();
 
     private ClienteDTO cliente = new ClienteDTO();
@@ -166,7 +166,7 @@ else
         CargandoData = true;
 
         usuarioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "UsuarioId").Value);
-        empresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+        negocioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "NegocioId").Value);
 
         await CargarClientes();
         await CargarProductos();
@@ -185,7 +185,7 @@ else
     #region Cargar_Datos
     protected async Task CargarClientes()
     {
-        var respuesta = await manager.Get<List<ClienteDTO>>($"api/clientes/GetClientesDTOs/{empresaId}");
+        var respuesta = await manager.Get<List<ClienteDTO>>($"api/clientes/GetClientesDTOs/{negocioId}");
 
         if (respuesta.Estado == EstadosDeRespuesta.Correcto)
         {
@@ -204,7 +204,7 @@ else
 
     protected async Task CargarProductos()
     {
-        var respuesta = await manager.Get<List<ProductoDTO>>($"api/productos/GetProductosDTOs/{empresaId}");
+        var respuesta = await manager.Get<List<ProductoDTO>>($"api/productos/GetProductosDTOs/{negocioId}");
 
         if (respuesta.Estado == EstadosDeRespuesta.Correcto)
         {

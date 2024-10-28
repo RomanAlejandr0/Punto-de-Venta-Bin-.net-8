@@ -177,18 +177,16 @@ else
         usuarioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "UsuarioId").Value);
         estadoAutorizacionNegocio = (await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "Autorizacion").Value;
 
-        if (estadoAutorizacionNegocio is not null)
+        if (estadoAutorizacionNegocio == "True")
         {
-            if (estadoAutorizacionNegocio == "True")
-            {
-                navigate.NavigateTo("ventas");
-            }
+            navigate.NavigateTo("ventas");
+        }
+        else
+        {
+            await CargarNegocios();
         }
 
         procesando = false;
-
-        await CargarNegocios();
-
     }
 
 

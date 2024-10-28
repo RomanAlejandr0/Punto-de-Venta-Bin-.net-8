@@ -214,7 +214,7 @@
 
     ElementReference textCantidad;
 
-    private long empresaId = new long();
+    private long negocioId = new long();
 
     List<string> opciones = new List<string>();
 
@@ -252,7 +252,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        empresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+        negocioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "NegocioId").Value);
 
         await CargarProductos();
         await CargarCategorias();
@@ -260,7 +260,7 @@
 
     protected async Task CargarProductos()
     {
-        var respuesta = await manager.Get<List<Producto>>($"api/productos/GetAll/{empresaId}");
+        var respuesta = await manager.Get<List<Producto>>($"api/productos/GetAll/{negocioId}");
 
         if (respuesta.Estado == EstadosDeRespuesta.Error)
         {
@@ -275,7 +275,7 @@
 
     protected async Task CargarCategorias()
     {
-        var respuesta = await manager.Get<List<Categoria>>($"Categorias/GetAll/{empresaId}");
+        var respuesta = await manager.Get<List<Categoria>>($"Categorias/GetAll/{negocioId}");
 
         if (respuesta.Estado == EstadosDeRespuesta.Correcto)
         {

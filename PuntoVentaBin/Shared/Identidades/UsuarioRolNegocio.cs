@@ -4,6 +4,14 @@ namespace PuntoVentaBin.Shared.Identidades
 {
     public class UsuarioRolNegocio
     {
+
+        public UsuarioRolNegocio()
+        {
+            Usuario = new Usuario();
+            Negocio = new Negocio();
+            Rol = new Rol();
+        }
+
         public long UsuarioId { get; set; }
         public Usuario Usuario { get; set; }
         public long NegocioId { get; set; }

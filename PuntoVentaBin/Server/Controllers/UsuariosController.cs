@@ -37,8 +37,8 @@ namespace PuntoVentaBIN.Server.Controllers
             return respuesta;
         }
 
-        [HttpGet("GetAll/{empresaId}")]
-        public async Task<Respuesta<List<Usuario>>> GetAll(long empresaId)
+        [HttpGet("GetAll/{negocioId}")]
+        public async Task<Respuesta<List<Usuario>>> GetAll(long negocioId)
         {
             var respuesta = new Respuesta<List<Usuario>> { Estado = EstadosDeRespuesta.Correcto };
 

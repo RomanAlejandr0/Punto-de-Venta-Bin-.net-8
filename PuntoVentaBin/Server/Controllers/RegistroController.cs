@@ -55,7 +55,7 @@ namespace PuntoVentaBin.Server.Controllers
                 {
                     // La cuenta no esta registrada y por lo tanto no activada
                     // (Registrar Cuenta y enviar correo de confirmacion)
-                    
+
                     value.FechaRegistro = DateTime.Now;
                     value.TokenConfirmacion = Guid.NewGuid().ToString();
                     value.CuentaActivada = false; // La cuenta aún no está activada
@@ -67,19 +67,39 @@ namespace PuntoVentaBin.Server.Controllers
                         return respuesta;
                     }
 
-                    value.Password = BCrypt.Net.BCrypt.HashPassword(value.Password);
 
-                    context.UsuariosBin.Add(value);
-                    await context.SaveChangesAsync(true);
-
-                    var usuarioRolNegocio = new UsuarioRolNegocio { UsuarioId = value.Id, RolId = 1, NegocioId = 1014   };
-                    context.UsuariosRolesNegocios.Add(usuarioRolNegocio);
-                    await context.SaveChangesAsync(true);
-
-
-                    // Enviar correo de confirmación
                     try
                     {
+                        //Guardar usuario
+                        value.Password = BCrypt.Net.BCrypt.HashPassword(value.Password);
+                        context.UsuariosBin.Add(value);
+                        await context.SaveChangesAsync(true);
+
+                        //Asignar usuario al negocio demo con el rol de administrador
+                        var usuarioRolNegocio = new UsuarioRolNegocio { UsuarioId = value.Id, RolId = 2, NegocioId = 1014 };
+                        context.UsuariosRolesNegocios.Add(usuarioRolNegocio);
+                        await context.SaveChangesAsync(true);
+
+
+                        //Buscar si lo agregaron a un negocio y vincularlo 
+                        var negociosPorVincular = await context.UsuariosConNegociosPorAsignar.Where(x => x.Email == value.Email).ToListAsync();
+
+                        var usuariosRolesNegocios = new List<UsuarioRolNegocio>();
+
+                        if (negociosPorVincular.Count != 0)
+                        {
+                            foreach (var negocioPorVincular in negociosPorVincular)
+                            {
+
+                                usuariosRolesNegocios.Add(new UsuarioRolNegocio { UsuarioId = value.Id, RolId = negocioPorVincular.RolId, NegocioId = negocioPorVincular.NegocioId });
+
+                            }
+                        }
+                        context.AddRange(usuariosRolesNegocios);
+                        context.SaveChangesAsync();
+
+
+                        //Enviar Correo de confirmacion
                         await EnviarCorreoConfirmacion(value.Email, value.Nombre, value.TokenConfirmacion);
                         respuesta.Datos = value.Id;
                         respuesta.Mensaje = "Usuario guardado en la base de datos. Se ha enviado un correo de confirmación.";
@@ -133,7 +153,7 @@ namespace PuntoVentaBin.Server.Controllers
                 //EnableSsl = bool.Parse(smtpConfig["EnableSsl"]),
                 EnableSsl = true,
                 DeliveryMethod = SmtpDeliveryMethod.Network,
-                UseDefaultCredentials = false, 
+                UseDefaultCredentials = false,
                 Credentials = new NetworkCredential(fromAddress.Address, fromPassword),
                 Timeout = 20000
             };
@@ -195,6 +215,6 @@ namespace PuntoVentaBin.Server.Controllers
         }
 
 
-        
+
     }
 }

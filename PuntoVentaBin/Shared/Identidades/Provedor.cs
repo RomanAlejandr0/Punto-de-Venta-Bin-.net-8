@@ -11,9 +11,9 @@ namespace PuntoVentaBin.Shared.Identidades
         public string Nombre { get; set; }
         [Required(ErrorMessage = "El nombre de la empresa es requerido.")]
         public string Empresa { get; set; }
-        public string TelefonoNegocio { get; set; } //TODO: TELEFONO CELULAR Y DE NEGOCIO, COMO PODEMOS ESPECIFICAR??
-        public  string TelefonoCelular { get; set; }
-        public string CorreoElectronico { get; set;}
+        public string? TelefonoNegocio { get; set; } //TODO: TELEFONO CELULAR Y DE NEGOCIO, COMO PODEMOS ESPECIFICAR??
+        public  string? TelefonoCelular { get; set; }
+        public string? CorreoElectronico { get; set;}
 
     }
 }

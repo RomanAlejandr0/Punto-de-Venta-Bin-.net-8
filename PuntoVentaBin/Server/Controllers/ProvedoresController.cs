@@ -43,15 +43,15 @@ namespace PuntoVentaBIN.Server.Controllers
 			return respuesta;
 		}
 
-		[HttpGet("GetAll/{empresaId}")]
-		public async Task<Respuesta<List<Provedor>>> GetAll(long empresaId)
+		[HttpGet("GetAll/{negocioId}")]
+		public async Task<Respuesta<List<Provedor>>> GetAll(long negocioId)
 		{
 			var respuesta = new Respuesta<List<Provedor>> { Estado = EstadosDeRespuesta.Correcto };
 
 			try
 			{
 				respuesta.Datos = await context.Provedores.
-					Where(x => x.NegocioId == empresaId).
+					Where(x => x.NegocioId == negocioId).
 					OrderBy(x => x.Id).
 					AsNoTracking().
 					ToListAsync();
@@ -59,7 +59,7 @@ namespace PuntoVentaBIN.Server.Controllers
 			catch (Exception ex)
 			{
 				respuesta.Estado = EstadosDeRespuesta.Error;
-				respuesta.Mensaje = $"Error al consultar los usuarios";
+				respuesta.Mensaje = $"Error al consultar los provedores";
 			}
 
 			return respuesta;

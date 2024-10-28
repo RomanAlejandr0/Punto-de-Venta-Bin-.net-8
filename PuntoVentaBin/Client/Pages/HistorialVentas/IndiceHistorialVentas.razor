@@ -116,7 +116,7 @@
 
 
 @code {
-    private long empresaId = new long();
+    private long negocioId = new long();
 
     private List<ClienteDTO> ClientesDTOs { get; set; }
 
@@ -127,9 +127,9 @@
 
     protected override async Task OnInitializedAsync()
     {
-        empresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+        negocioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "NegocioId").Value);
 
-        PeriodoFecha.NegocioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+        PeriodoFecha.NegocioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "NegocioId").Value);
 
         await CargarVentas();
 
@@ -160,7 +160,7 @@
 
     protected async Task CargarClientes()
     {
-        var respuesta = await manager.Get<List<ClienteDTO>>($"api/clientes/GetClientesDTOs/{empresaId}");
+        var respuesta = await manager.Get<List<ClienteDTO>>($"api/clientes/GetClientesDTOs/{negocioId}");
 
         if (respuesta.Estado == EstadosDeRespuesta.Correcto)
         {

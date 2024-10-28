@@ -140,7 +140,7 @@
     public string PalabraBusqueda { get; set; } = string.Empty;
     List<string> opciones = new List<string>();
 
-    private long EmpresaId = new long();
+    private long negocioId = new long();
 
     private Venta pedidoDetalle = new Venta() { VentaDetalles = new List<VentaDetalle>() };
     private List<Venta> Pedidos = new List<Venta>();
@@ -152,9 +152,9 @@
 
     protected async Task Cargar()
     {
-        EmpresaId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "EmpresaId").Value);
+        negocioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "NegocioId").Value);
 
-        var respuestaPedidos = await manager.Get<List<Venta>>($"api/pedidos/GetPedidosActivos/{EmpresaId}");
+        var respuestaPedidos = await manager.Get<List<Venta>>($"api/pedidos/GetPedidosActivos/{negocioId}");
 
         if (respuestaPedidos.Estado == EstadosDeRespuesta.Correcto)
         {

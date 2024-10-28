@@ -10,10 +10,9 @@ namespace PuntoVentaBin.Shared.LogServices
     public class ErrorLog
     {
         [Key]
-        public long IdErrorLog { get; set; }
-        public string? Usuario { get; set; }
+        public long Id { get; set; }
         public string Proceso { get; set; } = string.Empty;
-        public string Mensaje { get; set; } = string.Empty;
+        public string? Mensaje { get; set; } = string.Empty;
         public string? ExceptionMessage { get; set; }
         public string? StackTrace { get; set; }
         public DateTime Fecha { get; set; }
