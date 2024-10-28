@@ -44,12 +44,12 @@ namespace PuntoVentaBin.Server.Controllers
                     respuesta.Estado = EstadosDeRespuesta.NoProceso;
                     respuesta.Mensaje = "El correo electrónico no está registrado.";
                 }
-                else if (!user.CuentaActivada)
-                {
-                    // Caso 2: Cuenta no activada
-                    respuesta.Estado = EstadosDeRespuesta.NoProceso;
-                    respuesta.Mensaje = "La cuenta no está activada. Por favor, activa tu cuenta.";
-                }
+                //else if (!user.CuentaActivada)
+                //{
+                //    // Caso 2: Cuenta no activada
+                //    respuesta.Estado = EstadosDeRespuesta.NoProceso;
+                //    respuesta.Mensaje = "La cuenta no está activada. Por favor, activa tu cuenta.";
+                //}
                 else
                 {
                     if (BCrypt.Net.BCrypt.Verify(usuario.Password.Trim(), user.Password))

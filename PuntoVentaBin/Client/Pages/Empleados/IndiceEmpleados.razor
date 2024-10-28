@@ -137,7 +137,7 @@
                     <DataAnnotationsValidator />
                     <div class="mb-3">
                         <label class="form-label">Correo:</label>
-                        <InputText type="email" class="form-control" @bind-Value="usuarioConNegocioPorAsignar.Email"/>
+                        <InputText type="email" class="form-control" @bind-Value="usuarioConNegocioPorAsignar.Email" />
                         <ValidationMessage For="(() => usuarioConNegocioPorAsignar.Email)" />
                     </div>
                     <div class="mb-3">
@@ -213,17 +213,7 @@
         usuarioRolId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "RolId").Value);
         usuarioId = long.Parse((await auth.GetAuthenticationStateAsync()).User.Claims.First(c => c.Type == "UsuarioId").Value);
 
-        if (negocioId == 1014)
-        {
-            await mostrarMensajes.MostrarMensajeInformacion("Por motivos de seguridad no se muestra la informacion de los usuarios relacionados al negocio Demo");
-            Usuarios = new List<UsuarioRolNegocio>();
-        }
-        else
-        {
-            await CargarEmpleados();
-        }
-
-
+        await CargarEmpleados();
     }
 
     protected async Task CargarEmpleados()

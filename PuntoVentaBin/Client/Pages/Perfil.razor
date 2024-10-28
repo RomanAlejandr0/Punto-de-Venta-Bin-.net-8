@@ -1,5 +1,262 @@
-﻿<h3>Perfil</h3>
+﻿    @page "/perfil/{UsuarioId:long}"
+
+    @inject ILoginService loginService
+    @inject IMostrarMensajes mostrarMensajes
+    @inject IManager manager
+    @inject AuthenticationStateProvider auth
+    @inject NavigationManager navigate
+@inject IJSRuntime js
+    @using PuntoVentaBin.Client.Seguridad
+<style>
+    html,
+    body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .back-button {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1000;
+        color: #007bff;
+        background: transparent;
+        border: none;
+    }
+
+        .back-button:hover {
+            color: #0056b3;
+            text-decoration: none;
+        }
+
+    .form-signin {
+        width: 100%;
+        max-width: 400px;
+        padding: 2rem;
+        margin: auto;
+        background-color: #ffffff;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+        .form-signin img {
+            width: 120px;
+        }
+
+        .form-signin h1 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #333333;
+        }
+
+    .input-group-text {
+        background-color: #f8f9fa;
+        border: none;
+    }
+
+    .form-control {
+        border-radius: 0.25rem;
+        border: 1px solid #ced4da;
+    }
+
+        .form-control:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+        transition: background-color 0.3s, border-color 0.3s;
+    }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    .alert {
+        font-size: 0.9rem;
+    }
+
+    .login-links {
+        margin-top: 1rem;
+    }
+
+        .login-links a {
+            display: block;
+            color: #007bff;
+            text-decoration: none;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s;
+        }
+
+            .login-links a:hover {
+                color: #0056b3;
+                text-decoration: underline;
+            }
+</style>
+
+
+@if (procesando)
+{
+    <div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+        <div class="text-center mt-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p>Cargando...</p>
+        </div>
+    </div>
+}
+else
+{
+    <button class="back-button" @onclick="Regresar" aria-label="Regresar">
+        <i class="bi bi-arrow-left" style="font-size: 1.5rem;"></i>
+    </button>
+
+    @if (usuario == null)
+    {
+        <p>Cargando...</p>
+    }
+    else
+    {
+
+        <div class="d-flex align-items-center justify-content-center vh-100">
+            <main class="form-signin">
+                <EditForm OnValidSubmit="Editar" Model="usuario">
+                    <DataAnnotationsValidator />
+                    <h4 class="h3 fw-normal text-center">Perfil</h4>
+
+                    @* <img src="/ImagenesIndex/store.png" class="mb-4 rounded mx-auto d-block img-fluid" alt="Logo de perfil" /> *@
+
+                    <div class="input-group input-group-lg mt-3 mb-3">
+                        <span class="input-group-text">
+                            <i class="bi bi bi-file-person" style="font-size: 1.2rem;"></i>
+                        </span>
+                        <input type="email" class="form-control" placeholder="Nombre Usuario" @bind-value="@usuario.Nombre" readonly>
+                    </div>
+                    <ValidationMessage For="(() => usuario.Nombre)" />
+
+
+                    <div class="input-group input-group-lg mb-3">
+                        <span class="input-group-text">
+                            <i class="bi bi-envelope" style="font-size: 1.2rem;"></i>
+                        </span>
+                        <input type="email" class="form-control" placeholder="Email" @bind-value="@usuario.Email" readonly>
+                    </div>
+                    <ValidationMessage For="(() => usuario.Email)" />
+
+                    <div class="input-group input-group-lg mb-3">
+                        <span class="input-group-text">
+                            <i class="bi bi-lock" style="font-size: 1.2rem;"></i>
+                        </span>
+                        <input type="password" class="form-control" placeholder="Contraseña" @bind-value="@usuario.Password" readonly>
+                    </div>
+                    <ValidationMessage For="(() => usuario.Password)" />
+
+                    @* <button type="submit" class="w-100 btn btn-primary btn-lg mt-3" disabled="@(procesando == true)">
+            <i class="bi bi-box-arrow-in-right me-2"></i> GUardar Cambios
+            </button>
+            *@
+
+                    <button type="button" class="w-100 btn btn-outline-danger mt-3" @onclick="(() => EliminarCuenta())" disabled="@(procesando == true)">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Eliminar cuenta
+                    </button>
+
+                    @if (procesando)
+                    {
+                        <div class="text-center mt-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                            <p class="mt-2">@cargando</p>
+                        </div>
+                    }
+                </EditForm>
+
+            </main>
+        </div>
+    }
+}
+
+
+
+
 
 @code {
+    private string cargando = "Cargando...";
 
+    private bool procesando = false;
+
+    [Parameter] public long UsuarioId { get; set; }
+
+    protected Usuario usuario { get; set; }
+    protected string mensaje { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        procesando = true;
+
+        var respuesta = await manager.Get<Usuario>($"api/usuarios/{UsuarioId}");
+
+        if (respuesta.Estado == EstadosDeRespuesta.Correcto)
+        {
+            usuario = respuesta.Datos;
+        }
+        else
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+
+        procesando = false;
+    }
+
+    private async Task EliminarCuenta()
+    {
+        procesando = true;
+        mensaje = "Cargando...";
+
+
+        bool confirmed = await js.Confirm("¿Estas seguro de eliminar tu cuenta? Tu cuenta se desvinculara de todos los negocios en los que estabas registrado");
+
+        if (confirmed)
+        {
+            var respuesta = await manager.Post<long, bool>("api/usuarios/EliminarUsuario", UsuarioId);
+
+            if (respuesta.Estado == EstadosDeRespuesta.Correcto)
+            {
+                await mostrarMensajes.MostrarMensajeInformacion(respuesta.Mensaje);
+                
+                await loginService.Logout();
+                var Tarea = Task.Run(() => navigate.NavigateTo("/"));
+                await Tarea;
+            }
+            else
+            {
+                await mostrarMensajes.MostrarMensajeInformacion(respuesta.Mensaje);
+            }
+        }
+
+
+        procesando = false;
+    }
+
+    private async Task Editar()
+    {
+
+    }
+
+    private void Regresar()
+    {
+        navigate.NavigateTo("/mis-negocios");
+    }
 }

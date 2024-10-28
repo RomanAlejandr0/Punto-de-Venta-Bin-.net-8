@@ -100,14 +100,22 @@ namespace PuntoVentaBIN.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<Respuesta<long>> EliminarUsuario(Usuario usuario)
+        [Route("{action}")]
+        public async Task<Respuesta<bool>> EliminarUsuario([FromBody] long usuarioId)
         {
-            var respuesta = new Respuesta<long> { Estado = EstadosDeRespuesta.Correcto };
-            var _usuario = usuario;
+            var respuesta = new Respuesta<bool> { Estado = EstadosDeRespuesta.Correcto, Mensaje = "Tu cuenta se elimino correctamente" };
 
             try
             {
-                var usuarioBorrado = await context.UsuariosBin.FirstOrDefaultAsync(x => x.Id == _usuario.Id);
+
+
+
+                var usuariosRolesNegocios = await context.UsuariosRolesNegocios.Where(x => x.UsuarioId == usuarioId).ToListAsync();
+                context.UsuariosRolesNegocios.RemoveRange(usuariosRolesNegocios);
+                await context.SaveChangesAsync();
+
+
+                var usuarioBorrado = await context.UsuariosBin.FirstOrDefaultAsync(x => x.Id == usuarioId);
                 context.Attach(usuarioBorrado).State = EntityState.Deleted;
                 await context.SaveChangesAsync();
             }

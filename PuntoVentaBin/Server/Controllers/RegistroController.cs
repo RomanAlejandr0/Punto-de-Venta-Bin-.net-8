@@ -82,27 +82,28 @@ namespace PuntoVentaBin.Server.Controllers
 
 
                         //Buscar si lo agregaron a un negocio y vincularlo 
-                        var negociosPorVincular = await context.UsuariosConNegociosPorAsignar.Where(x => x.Email == value.Email).ToListAsync();
+                        //var negociosPorVincular = await context.UsuariosConNegociosPorAsignar.Where(x => x.Email == value.Email).ToListAsync();
 
-                        var usuariosRolesNegocios = new List<UsuarioRolNegocio>();
+                        //var usuariosRolesNegocios = new List<UsuarioRolNegocio>();
 
-                        if (negociosPorVincular.Count != 0)
-                        {
-                            foreach (var negocioPorVincular in negociosPorVincular)
-                            {
+                        //if (negociosPorVincular.Count != 0)
+                        //{
+                        //    foreach (var negocioPorVincular in negociosPorVincular)
+                        //    {
 
-                                usuariosRolesNegocios.Add(new UsuarioRolNegocio { UsuarioId = value.Id, RolId = negocioPorVincular.RolId, NegocioId = negocioPorVincular.NegocioId });
+                        //        usuariosRolesNegocios.Add(new UsuarioRolNegocio { UsuarioId = value.Id, RolId = negocioPorVincular.RolId, NegocioId = negocioPorVincular.NegocioId });
 
-                            }
-                        }
-                        context.AddRange(usuariosRolesNegocios);
-                        context.SaveChangesAsync();
+                        //    }
+                        //}
+                        //context.AddRange(usuariosRolesNegocios);
+                        //context.SaveChangesAsync();
 
 
                         //Enviar Correo de confirmacion
                         await EnviarCorreoConfirmacion(value.Email, value.Nombre, value.TokenConfirmacion);
                         respuesta.Datos = value.Id;
-                        respuesta.Mensaje = "Usuario guardado en la base de datos. Se ha enviado un correo de confirmación.";
+                        respuesta.Mensaje = "Usuario guardado en la base de datos. Se ha enviado un correo de confirmación." +
+                                            "Confirma tu cuenta para tener acceso a mas funciones";
                     }
                     catch (Exception ex)
                     {
